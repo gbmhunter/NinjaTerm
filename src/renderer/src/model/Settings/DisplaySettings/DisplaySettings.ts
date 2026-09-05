@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import type { DisplaySettingsData } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
 import { SettingsBranch } from '../SettingsBranch';
 
@@ -73,7 +74,12 @@ const SYSTEM_MONOSPACE_FAMILIES = 'Consolas, Menlo, "DejaVu Sans Mono"';
 export const TERMINAL_FONT_FALLBACK_STACK = `${NINJATERM_FONT_FAMILY}, ${SYSTEM_MONOSPACE_FAMILIES}, monospace`;
 
 export default class DisplaySettings {
-  profileManager: AppDataManager;
+  session: Session;
+
+  /** App-wide data (presets, MCP flags). Reached through the session. */
+  get profileManager(): AppDataManager {
+    return this.session.app.profileManager;
+  }
 
   /** See `SettingsBranch` for how this class relates to `DisplaySettingsData`. */
   private readonly branch = new SettingsBranch<DisplaySettingsData>(
@@ -139,10 +145,10 @@ export default class DisplaySettings {
 
   tooltipDelayMs = this.branch.applyableNumber('tooltipDelayMs', z.coerce.number().int().min(0).max(5000));
 
-  constructor(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
-    this.branch.attach(profileManager);
-    makeAutoObservable<DisplaySettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
+  constructor(session: Session) {
+    this.session = session;
+    this.branch.attach(session);
+    makeAutoObservable<DisplaySettings, 'branch'>(this, { branch: false, session: false }); // Make sure this is at the end of the constructor
   }
 
   /**

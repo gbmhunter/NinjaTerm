@@ -1,20 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import Graphing, { DetectionMode } from './Graphing';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 
 // Mock dependencies
 const mockSnackbar = {
   sendToSnackbar: vi.fn()
 } as unknown as SnackbarController;
 
-// A fresh mock per test. `Graphing` writes its settings straight into this
-// object (it is the only copy of each setting), so a shared one would leak
+// A fresh mock session per test. `Graphing` writes its settings straight into
+// this object (it is the only copy of each setting), so a shared one would leak
 // state between tests. The old version got away with sharing by accident:
 // `makeAutoObservable` deep-cloned the plain-object mock into each instance.
-const makeMockAppDataManager = () => ({
-  appData: {
-    currentAppConfig: {
+const makeMockSession = () => ({
+  app: { snackbar: mockSnackbar },
+  config: {
       settings: {
         graphingSettings: {
           graphingEnabled: false,
@@ -38,18 +38,17 @@ const makeMockAppDataManager = () => ({
           detectionMode: 'Basic Prefix Mode',
         }
       }
-    }
   },
   registerOnConfigReload: vi.fn(),
   saveAppData: vi.fn()
-} as unknown as AppDataManager);
+} as unknown as Session);
 
 describe('graphing tests', () => {
   let graphing: Graphing;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    graphing = new Graphing(mockSnackbar, makeMockAppDataManager());
+    graphing = new Graphing(makeMockSession());
     graphing.setGraphingEnabled(true);
   });
 

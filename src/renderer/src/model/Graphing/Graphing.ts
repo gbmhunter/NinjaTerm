@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import type { GraphingSettingsData } from 'src/model/AppDataManager/DataClasses/GraphingSettingsData';
 import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
@@ -67,7 +67,7 @@ class Plot {
 class Graphing {
 
 	snackbar: SnackbarController;
-	appDataManager: AppDataManager;
+	session: Session;
 
 	/**
 	 * The persisted graphing settings — the only copy of each setting. See
@@ -253,12 +253,12 @@ class Graphing {
 
 	isApplyable = false;
 
-	constructor(snackbar: SnackbarController, appDataManager: AppDataManager) {
-		this.snackbar = snackbar;
-		this.appDataManager = appDataManager;
-		this.branch.attach(appDataManager);
+	constructor(session: Session) {
+		this.session = session;
+		this.snackbar = session.app.snackbar;
+		this.branch.attach(session);
 
-		makeAutoObservable<Graphing, 'branch'>(this, { branch: false });
+		makeAutoObservable<Graphing, 'branch'>(this, { branch: false, session: false });
 	}
 
 	/**

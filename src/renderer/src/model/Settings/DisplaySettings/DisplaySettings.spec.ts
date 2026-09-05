@@ -1,14 +1,13 @@
 import { expect, test, describe, beforeEach } from 'vitest';
 
 import { App } from 'src/model/App';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import DisplaySettings, { TERMINAL_FONT_FALLBACK_STACK, TerminalFont } from './DisplaySettings';
 
 describe('display settings', () => {
   let displaySettings: DisplaySettings;
   beforeEach(async () => {
     window.localStorage.clear();
-    displaySettings = new DisplaySettings(new AppDataManager(new App()));
+    displaySettings = new DisplaySettings(new App().activeSession);
   });
 
   //================================================================================
@@ -125,7 +124,7 @@ describe('display settings', () => {
       displaySettings.terminalFontCustomName.setDispValue('Perfect DOS VGA 437');
       displaySettings.terminalFontCustomName.apply();
 
-      const reloaded = new DisplaySettings(new AppDataManager(new App()));
+      const reloaded = new DisplaySettings(new App().activeSession);
 
       expect(reloaded.terminalFont).toBe(TerminalFont.CUSTOM);
       expect(reloaded.terminalFontCustomName.appliedValue).toBe('Perfect DOS VGA 437');

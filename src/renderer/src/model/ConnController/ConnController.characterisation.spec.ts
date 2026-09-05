@@ -156,7 +156,7 @@ describe('ConnController connection lifecycle', () => {
 
     it('routes received bytes into the app', async () => {
       await openSerial();
-      const parseRxData = vi.spyOn(app, 'parseRxData').mockImplementation(() => {});
+      const parseRxData = vi.spyOn(app.activeSession, 'parseRxData').mockImplementation(() => {});
 
       handlers['serial:data'][0]('COM3', new Uint8Array([1, 2, 3]));
 
@@ -166,7 +166,7 @@ describe('ConnController connection lifecycle', () => {
 
     it('ignores data addressed to a different port', async () => {
       await openSerial();
-      const parseRxData = vi.spyOn(app, 'parseRxData').mockImplementation(() => {});
+      const parseRxData = vi.spyOn(app.activeSession, 'parseRxData').mockImplementation(() => {});
 
       handlers['serial:data'][0]('COM9', new Uint8Array([1]));
 
@@ -202,7 +202,7 @@ describe('ConnController connection lifecycle', () => {
       await conn.closeConnection();
       await openSerial();
 
-      const parseRxData = vi.spyOn(app, 'parseRxData').mockImplementation(() => {});
+      const parseRxData = vi.spyOn(app.activeSession, 'parseRxData').mockImplementation(() => {});
       // Only the listener from the live connection should still be attached;
       // the first one's disposer was called on close.
       const live = handlers['serial:data'][handlers['serial:data'].length - 1];
@@ -236,7 +236,7 @@ describe('ConnController connection lifecycle', () => {
 
     it('routes received bytes into the app', async () => {
       await openSocket();
-      const parseRxData = vi.spyOn(app, 'parseRxData').mockImplementation(() => {});
+      const parseRxData = vi.spyOn(app.activeSession, 'parseRxData').mockImplementation(() => {});
 
       handlers['socket:data'][0]('sock-1', new Uint8Array([9]));
 

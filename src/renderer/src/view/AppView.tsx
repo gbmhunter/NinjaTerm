@@ -24,6 +24,7 @@ import styles from './AppView.module.css';
 import FakePortDialogView from './FakePorts/FakePortDialogView';
 import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
+import SessionTabsView from './Sessions/SessionTabsView';
 import { SelectionController } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
 
@@ -455,7 +456,10 @@ const AppView = observer(() => {
           {/* =================================================================================== */}
           {/* MAIN PANE */}
           {/* =================================================================================== */}
-          <MainPaneSelector app={app} />
+          <SessionTabsView app={app} />
+          {/* Keyed by session so a tab switch remounts the pane against the
+              new session's terminals rather than diffing one into the other. */}
+          <MainPaneSelector key={app.activeSession.id} app={app} />
 
           {/* =================================================================================== */}
           {/* BOTTOM APP TOOLBAR */}

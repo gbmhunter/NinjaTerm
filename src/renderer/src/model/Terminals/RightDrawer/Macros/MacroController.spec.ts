@@ -36,7 +36,7 @@ describe('MacroController auto-response triggers (issue #364)', () => {
     // Intercept the actual serial-port write so we can assert what would
     // have been sent without needing an open port.
     writeSpy = vi.fn(async (_bytes: Uint8Array) => {});
-    app.writeBytesToSerialPort = writeSpy as any;
+    app.activeSession.writeBytesToSerialPort = writeSpy as any;
   });
 
   //==========================================================================
@@ -190,7 +190,7 @@ describe('MacroController interval triggers (issue #364)', () => {
     app = new App();
     macroController = app.terminals.rightDrawer.macroController;
     writeSpy = vi.fn(async (_bytes: Uint8Array) => {});
-    app.writeBytesToSerialPort = writeSpy as any;
+    app.activeSession.writeBytesToSerialPort = writeSpy as any;
   });
 
   afterEach(() => {

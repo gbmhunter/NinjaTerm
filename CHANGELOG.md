@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- **Multiple sessions.** A tab strip above the main pane holds one session per tab, each with its own connection, terminal settings, macros, filters, rules, logging and graphing — RTT from one board in one tab and serial from another in the next, in a single window. The "+" button opens a session with default settings; right-click a tab to rename, duplicate, reorder or close; Ctrl+Tab / Ctrl+Shift+Tab switch. Sessions persist as `appData.sessions` (app data v25 wraps the old single config as "Session 1") and the settings pane names the session it is editing.
+- **MCP tools are session-aware.** `list_sessions` is new; `get_terminal_output`, `send_data` and `get_connection_status` take an optional `session` (id or name) and default to the active one; each session has an RX stream at `ninjaterm://sessions/{id}/rxstream`, with `ninjaterm://terminal/rxstream` still following the active session. `send_data` now goes through the session, so it works for sockets, RTT and Bluetooth and is echoed and logged like typed data.
 - **Find supports regular expressions.** A `.*` toggle in the Find bar switches the query to a regex (the case toggle still applies); an invalid pattern shows `Invalid`, with the compile error on hover. Filters and Highlight Rules already took regex.
 
 ### Fixed
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- **`App` is split into `App` and `Session`.** Everything about one connection moved to `Session`; every session-owned class takes its session rather than the app, and `App` exposes the active session's members through delegating getters so the views are unchanged. Config-reload notifications moved from `AppDataManager` onto the session.
 - **Each setting now has exactly one copy.** The five settings classes plus `Graphing`, `Logging`, `RightDrawer` and `Terminals` kept a runtime field per setting and synced it with the persisted `*Data` object by hand (`_loadConfig`/`_saveConfig`/`_isLoading`); they are now thin typed façades over the persisted object via `SettingsBranch`, so there is nothing to load, save back, or guard. Root cause was the config tree being observable only on the second launch, not the first — fixed in `AppDataManager`. The baud-rate, socket-timeout, RTT-speed and RTT-channel inputs now validate as you type like every other field.
 - **Graphing's numeric settings are stored as numbers.** Buffer size, data-point limit and the four axis bounds were the only settings persisted as strings; app data v25 converts them, and drops the right drawer's dead per-branch `version` field.
 - **Log settings follow an applied preset even while logging is running.** They used to be ignored until logging stopped; the directory, file name and existing-file behaviour are only read when logging starts, and the raw TX/RX toggles now take effect immediately.

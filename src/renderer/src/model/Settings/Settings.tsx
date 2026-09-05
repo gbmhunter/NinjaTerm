@@ -1,5 +1,3 @@
-// import PortInfo from '@serialport/bindings-interface';
-
 import { makeAutoObservable } from 'mobx';
 
 import TxSettings from './TxSettings/TxSettings';
@@ -8,7 +6,7 @@ import DisplaySettings from './DisplaySettings/DisplaySettings';
 import { PortSettings } from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import RulesSettings from './RulesSettings/RulesSettings';
-import { App } from '../App';
+import type { Session } from '../Session/Session';
 
 export enum SettingsCategories {
   CONNECTION_CONFIGURATION,
@@ -20,9 +18,13 @@ export enum SettingsCategories {
   RULES,
 }
 
+/**
+ * One session's settings, grouped by pane. Each member is a façade over the
+ * matching branch of the session's persisted config (see `SettingsBranch`).
+ */
 export class Settings {
 
-  app: App;
+  session: Session;
 
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.CONNECTION_CONFIGURATION;
@@ -37,25 +39,23 @@ export class Settings {
 
   generalSettings: GeneralSettings;
 
-
   rulesSettings: RulesSettings;
 
-  /**
-   * Constructor for the Settings class.
-   *
-   * @param appStorage Needed to load/save settings into local storage.
-   * @param fakePortController Needed to show the hidden fake port dialog.
-   */
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
 
-    this.portConfiguration = new PortSettings(this.app);
-    this.txSettings = new TxSettings(this.app.profileManager);
-    this.rxSettings = new RxSettings(this.app.profileManager);
-    this.displaySettings = new DisplaySettings(this.app.profileManager);
-    this.generalSettings = new GeneralSettings(this.app.profileManager);
-    this.rulesSettings = new RulesSettings(this.app.profileManager);
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
+    this.portConfiguration = new PortSettings(session);
+    this.txSettings = new TxSettings(session);
+    this.rxSettings = new RxSettings(session);
+    this.displaySettings = new DisplaySettings(session);
+    this.generalSettings = new GeneralSettings(session);
+    this.rulesSettings = new RulesSettings(session);
+    makeAutoObservable(this, { session: false }); // Make sure this is at the end of the constructor
+  }
+
+  /** The application these settings belong to, via their session. */
+  get app() {
+    return this.session.app;
   }
 
   setActiveSettingsCategory(settingsCategory: SettingsCategories) {
@@ -63,9 +63,8 @@ export class Settings {
   }
 
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    // console.log(event);
     if (event.key === 'f') {
-      this.app.fakePortController.setIsDialogOpen(true);
+      this.session.fakePortController.setIsDialogOpen(true);
     }
   }
 }

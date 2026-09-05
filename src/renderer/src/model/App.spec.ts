@@ -2,7 +2,7 @@ import { expect, test, describe, beforeEach, afterEach, vi } from 'vitest';
 
 import { App } from './App';
 
-describe('App rate-tracking buffers', () => {
+describe('Session rate-tracking buffers', () => {
   beforeEach(() => {
     window.localStorage.clear();
     // Stop the 500ms cleanup interval from running so we can observe the
@@ -21,13 +21,14 @@ describe('App rate-tracking buffers', () => {
     // a sub-second window are entirely plausible. Today there is no cap, so
     // the array grows linearly until the 500ms cleanup interval fires.
     const app = new App();
-    const recordRxDataPoint = (app as any).recordRxDataPoint.bind(app);
+    const session = app.activeSession;
+    const recordRxDataPoint = (session as any).recordRxDataPoint.bind(session);
 
     for (let i = 0; i < 100_000; i += 1) {
       recordRxDataPoint(1);
     }
 
-    const length = (app as any).rxDataPoints.length;
+    const length = (session as any).rxDataPoints.length;
     // Recording lets the array overshoot MAX_DATA_POINTS (2048) and trims back
     // in one splice when it reaches DATA_POINT_TRIM_AT (4096), so 4096 is the
     // real ceiling. Asserting that rather than a loose bound means this also
@@ -37,13 +38,14 @@ describe('App rate-tracking buffers', () => {
 
   test('txDataPoints stays bounded under a tight burst between cleanup ticks', () => {
     const app = new App();
-    const recordTxDataPoint = (app as any).recordTxDataPoint.bind(app);
+    const session = app.activeSession;
+    const recordTxDataPoint = (session as any).recordTxDataPoint.bind(session);
 
     for (let i = 0; i < 100_000; i += 1) {
       recordTxDataPoint(1);
     }
 
-    const length = (app as any).txDataPoints.length;
+    const length = (session as any).txDataPoints.length;
     expect(length).toBeLessThanOrEqual(4096);
   });
 });

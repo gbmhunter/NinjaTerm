@@ -24,7 +24,7 @@ describe('preset controller', () => {
     app = new App();
   });
 
-  const currentSettings = () => app.profileManager.appData.currentAppConfig.settings;
+  const currentSettings = () => app.activeSession.config.settings;
 
   describe('mobx strict mode', () => {
     // `applyPreset` is async, and `makeAutoObservable` only wraps a method in an
@@ -98,7 +98,7 @@ describe('preset controller', () => {
       window.localStorage.clear();
       const freshApp = new App();
       await freshApp.presetController.applyPreset(preset);
-      const config = freshApp.profileManager.appData.currentAppConfig;
+      const config = freshApp.activeSession.config;
       for (const [path, value] of flattenPatch(preset.patch)) {
         expect(getAtPath(config, path), `${preset.id}: ${path} did not stick`).toEqual(value);
       }

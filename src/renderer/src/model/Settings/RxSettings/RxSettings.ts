@@ -1,7 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
-import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
+import type { AppDataManager } from "src/model/AppDataManager/AppDataManager";
+import type { Session } from "src/model/Session/Session";
 import type { RxSettingsData } from "src/model/AppDataManager/DataClasses/RxSettingsData";
 import { SettingsBranch } from "../SettingsBranch";
 
@@ -156,7 +157,12 @@ export enum TimestampFormat {
 
 export default class RxSettings {
 
-  profileManager: AppDataManager;
+  session: Session;
+
+  /** App-wide data (presets, MCP flags). Reached through the session. */
+  get profileManager(): AppDataManager {
+    return this.session.app.profileManager;
+  }
 
   /** See `SettingsBranch` for how this class relates to `RxSettingsData`. */
   private readonly branch = new SettingsBranch<RxSettingsData>(
@@ -297,10 +303,10 @@ export default class RxSettings {
   get showWarningOnRxBreakSignal() { return this.branch.data.showWarningOnRxBreakSignal; }
   setShowWarningOnRxBreakSignal = this.branch.setter('showWarningOnRxBreakSignal');
 
-  constructor(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
-    this.branch.attach(profileManager);
-    makeAutoObservable<RxSettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
+  constructor(session: Session) {
+    this.session = session;
+    this.branch.attach(session);
+    makeAutoObservable<RxSettings, 'branch'>(this, { branch: false, session: false }); // Make sure this is at the end of the constructor
   }
 
   getDataTypeNameForToolbarDisplay = () => {

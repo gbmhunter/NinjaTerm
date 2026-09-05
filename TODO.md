@@ -128,7 +128,9 @@ does ~5 allocations plus one MobX notification:
 
 ---
 
-## 2. `ConnController.openConnection` is a 370-line if/else over transports  [arch]
+## 2. `ConnController.openConnection` is a 370-line if/else over transports  [arch] — DONE 2026-09-04
+
+**Status: done** in #418 (`Transport` interface; `ConnController` 1082 → 653 lines). Original analysis kept below.
 
 `ConnController.ts:165-535`. Five branches (serial / fake / socket / RTT / BLE),
 each repeating near-identical structure: show modal, IPC connect, register
@@ -375,12 +377,12 @@ Ranked by what an embedded developer would most likely notice.
       configurable inter-byte / inter-line delay". The single most common reason
       people still open TeraTerm or Minicom. Fits naturally as a `Transport`-level
       concern once §2 lands.
-- [ ] **Multiple simultaneous connections / session tabs.** Single-connection
-      today (`currentPortPath`, `currentSocketConnectionId`, one `Terminals`).
-      Watching a device's UART *and* its RTT channel at once, or two boards
-      talking to each other, is a real workflow. This is the payoff for the
-      `Transport` refactor — `serialService` already keys by port path in a `Map`
-      in anticipation.
+- [x] **Multiple simultaneous connections / session tabs.** (done 2026-09-05)
+      `App` is split into `App` + `Session`; sessions are tabs, each with its own
+      connection and config (`appData.sessions`), and the MCP tools take a
+      `session`. Follow-ups: split view (two sessions side by side), cross-session
+      triggers (an RTT line sends a serial command), and pruning MCP stream
+      buffers for closed sessions.
 - [ ] **Protocol framing / decoding layer.** Currently ASCII and Number data
       types. A pluggable framer — delimiter, length-prefixed, COBS, SLIP, Modbus
       RTU, NMEA — that splits the stream into frames and renders them as

@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
-import { App } from 'src/model/App';
+import type { Session } from 'src/model/Session/Session';
 import type { LogSettingsData } from 'src/model/AppDataManager/DataClasses/LogSettingsData';
 import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
@@ -19,7 +19,7 @@ export enum ExistingFileBehaviors {
  * This class uses Electron's native file system API for logging functionality.
  */
 export default class Logging {
-  app: App;
+  session: Session;
 
   /**
    * The persisted log settings — the only copy of each setting. See
@@ -128,9 +128,9 @@ export default class Logging {
 
   fileSizeBytes: number | null = null;
 
-  constructor(app: App) {
-    this.app = app;
-    this.branch.attach(app.profileManager);
+  constructor(session: Session) {
+    this.session = session;
+    this.branch.attach(session);
 
     makeAutoObservable<Logging, 'branch' | 'bufferedChunks' | 'bufferedByteCount' | 'writeChain'>(this, {
       branch: false,
@@ -146,7 +146,7 @@ export default class Logging {
     // one) gets the platform default — now, and after any reload that leaves
     // it empty.
     void this._useDefaultLogDirectoryIfUnset();
-    app.profileManager.registerOnConfigReload(['settings.logSettings'], () => {
+    session.registerOnConfigReload(['settings.logSettings'], () => {
       void this._useDefaultLogDirectoryIfUnset();
     });
   }
@@ -318,12 +318,12 @@ export default class Logging {
       } else {
         this._requeue(chunks, byteCount);
         console.error('Failed to write to log file:', result.error);
-        this.app.snackbar.sendToSnackbar(`Failed to write to log file: ${result.error}`, 'error');
+        this.session.snackbar.sendToSnackbar(`Failed to write to log file: ${result.error}`, 'error');
       }
     } catch (error) {
       this._requeue(chunks, byteCount);
       console.error('Error writing buffered data to disk:', error);
-      this.app.snackbar.sendToSnackbar(`Error writing to log file: ${error}`, 'error');
+      this.session.snackbar.sendToSnackbar(`Error writing to log file: ${error}`, 'error');
     }
   }
 

@@ -1,6 +1,6 @@
 import { runInAction } from 'mobx';
 
-import { App } from '../../App';
+import type { Session } from '../../Session/Session';
 import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
@@ -23,7 +23,7 @@ export class RttTransport implements Transport {
   readonly selfManagesReconnection = false;
   readonly selfManagesState = false;
 
-  private app: App;
+  private session: Session;
 
   private connectionId: string | null = null;
 
@@ -36,12 +36,12 @@ export class RttTransport implements Transport {
    */
   serverLogLines: string[] = [];
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
   }
 
   validate(): string | null {
-    const device = this.app.settings.portConfiguration.rttDevice;
+    const device = this.session.settings.portConfiguration.rttDevice;
     if (!device || device.trim() === '') {
       return 'No RTT target device specified. Set the device (e.g. nRF52832_xxAA) in Connection Settings.';
     }
@@ -49,7 +49,7 @@ export class RttTransport implements Transport {
   }
 
   async open(callbacks: TransportCallbacks): Promise<OpenOutcome> {
-    const portConfig = this.app.settings.portConfiguration;
+    const portConfig = this.session.settings.portConfiguration;
 
     // Clear the previous attempt's log so the user sees only this one.
     runInAction(() => {
@@ -96,7 +96,7 @@ export class RttTransport implements Transport {
     this.subscribe(callbacks);
 
     // Promote the device to the top of the recently-used list now we know it works.
-    this.app.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
+    this.session.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
 
     return { success: true };
   }
@@ -158,7 +158,7 @@ export class RttTransport implements Transport {
   }
 
   openedMessage() {
-    return `RTT connected (${this.app.settings.portConfiguration.rttDevice}).`;
+    return `RTT connected (${this.session.settings.portConfiguration.rttDevice}).`;
   }
 
   closedMessage() {
@@ -166,7 +166,7 @@ export class RttTransport implements Transport {
   }
 
   reconnectedMessage() {
-    return `Automatically reconnected RTT to "${this.app.settings.portConfiguration.rttDevice}".`;
+    return `Automatically reconnected RTT to "${this.session.settings.portConfiguration.rttDevice}".`;
   }
 
   /** Nothing cheap to probe first — the connect attempt is the test. */

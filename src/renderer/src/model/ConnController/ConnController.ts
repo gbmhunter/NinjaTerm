@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { PortInfo } from '@serialport/bindings-interface';
 
-import { App, MainPanes } from '../App';
+import type { Session } from '../Session/Session';
 import { ConnState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 import { BluetoothLEController } from './BluetoothLEController';
 import { log } from '../Util/Log';
@@ -71,7 +71,7 @@ export class ConnController {
    */
   useFakeSerialPort = false;
 
-  private app: App;
+  private session: Session;
 
   // Auto-reconnection polling
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
@@ -92,10 +92,10 @@ export class ConnController {
   /**
    * Creates a new ConnController instance.
    *
-   * @param app The main app instance.
+   * @param session The session this connection belongs to.
    */
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
     this.currentFlowControlState = {
       dtr: false,
       dsr: false,
@@ -104,7 +104,7 @@ export class ConnController {
       dcd: false,
     };
 
-    this.bluetoothLEController = new BluetoothLEController(app);
+    this.bluetoothLEController = new BluetoothLEController(session);
     this._buildTransports();
 
     // Make sure to do this at the end of the constructor
@@ -114,12 +114,12 @@ export class ConnController {
   /** Instantiates one transport per connection type. */
   private _buildTransports() {
     this.transports = new Map<ConnectionType, Transport>([
-      [ConnectionType.SERIAL_PORT, new SerialTransport(this.app)],
-      [ConnectionType.SOCKET, new SocketTransport(this.app)],
-      [ConnectionType.RTT, new RttTransport(this.app)],
-      [ConnectionType.BLUETOOTH_LE, new BleTransport(this.app, this.bluetoothLEController)],
+      [ConnectionType.SERIAL_PORT, new SerialTransport(this.session)],
+      [ConnectionType.SOCKET, new SocketTransport(this.session)],
+      [ConnectionType.RTT, new RttTransport(this.session)],
+      [ConnectionType.BLUETOOTH_LE, new BleTransport(this.session, this.bluetoothLEController)],
     ]);
-    this.fakeTransport = new FakeTransport(this.app);
+    this.fakeTransport = new FakeTransport(this.session);
   }
 
   /**
@@ -129,7 +129,7 @@ export class ConnController {
    * backs `SERIAL_PORT` in place of the real serial transport.
    */
   private _selectTransport(): Transport {
-    const connectionType = this.app.settings.portConfiguration.connectionType;
+    const connectionType = this.session.settings.portConfiguration.connectionType;
     if (connectionType === ConnectionType.SERIAL_PORT && this.useFakeSerialPort) {
       return this.fakeTransport;
     }
@@ -147,9 +147,9 @@ export class ConnController {
    */
   private _transportCallbacks(): TransportCallbacks {
     return {
-      onData: (bytes: Uint8Array) => this.app.parseRxData(bytes),
+      onData: (bytes: Uint8Array) => this.session.parseRxData(bytes),
       onError: (message: string) => {
-        this.app.snackbar.sendToSnackbar(message, 'error');
+        this.session.snackbar.sendToSnackbar(message, 'error');
         log.error(message);
       },
       onClosed: () => this.handlePortClosed(),
@@ -205,12 +205,12 @@ export class ConnController {
 
     const validationError = transport.validate();
     if (validationError !== null) {
-      this.app.snackbar.sendToSnackbar(validationError, 'error');
+      this.session.snackbar.sendToSnackbar(validationError, 'error');
       return false;
     }
 
     const showProgressModal = (show: boolean) => {
-      if (!suppressProgressModal) this.app.setShowCircularProgressModal(show);
+      if (!suppressProgressModal) this.session.app.setShowCircularProgressModal(show);
     };
 
     showProgressModal(true);
@@ -229,7 +229,7 @@ export class ConnController {
         log.error(msg);
         console.error(msg);
         if (!silenceSnackbar) {
-          this.app.snackbar.sendToSnackbar(msg, 'error');
+          this.session.snackbar.sendToSnackbar(msg, 'error');
         }
       }
       return false;
@@ -246,7 +246,7 @@ export class ConnController {
       });
 
       if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar(transport.openedMessage(), 'success');
+        this.session.snackbar.sendToSnackbar(transport.openedMessage(), 'success');
       }
     } else {
       this.stopPollingForReconnection();
@@ -264,12 +264,12 @@ export class ConnController {
 
     // A partially-received number from a previous session would otherwise be
     // completed by the first bytes of this one.
-    this.app.terminals.txTerminal.clearPartialNumberBuffer();
-    this.app.terminals.rxTerminal.clearPartialNumberBuffer();
-    this.app.terminals.txRxTerminal.clearPartialNumberBuffer();
+    this.session.terminals.txTerminal.clearPartialNumberBuffer();
+    this.session.terminals.rxTerminal.clearPartialNumberBuffer();
+    this.session.terminals.txRxTerminal.clearPartialNumberBuffer();
 
-    if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
-      this.app.setShownMainPane(MainPanes.TERMINAL);
+    if (this.session.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+      this.session.showTerminalPane();
     }
 
     return true;
@@ -287,7 +287,7 @@ export class ConnController {
     await transport.close();
 
     if (!transport.selfManagesState && !silenceSnackbar) {
-      this.app.snackbar.sendToSnackbar(transport.closedMessage(), 'success');
+      this.session.snackbar.sendToSnackbar(transport.closedMessage(), 'success');
     }
 
     runInAction(() => {
@@ -324,7 +324,7 @@ export class ConnController {
       return;
     }
 
-    if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+    if (this.session.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
       this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       this.startPollingForReconnection();
     } else {
@@ -428,7 +428,7 @@ export class ConnController {
         });
         if (reopened) {
           this.stopPollingForReconnection();
-          this.app.snackbar.sendToSnackbar(transport.reconnectedMessage(), 'success');
+          this.session.snackbar.sendToSnackbar(transport.reconnectedMessage(), 'success');
         }
       } catch (error) {
         console.error('Error during reconnection polling:', error);
@@ -460,7 +460,7 @@ export class ConnController {
    * @param port The serial port info to set as the selected port.
    */
   setSelectedPort = (port: PortInfo) => {
-    this.app.settings.portConfiguration.setSelectedSerialPort(port);
+    this.session.settings.portConfiguration.setSelectedSerialPort(port);
   };
 
   setPortState(newPortState: ConnState) {
@@ -596,7 +596,7 @@ export class ConnController {
     }
 
     // If there are baud rate validation errors, can't open
-    if (!this.app.settings.portConfiguration.baudRate.isValid) {
+    if (!this.session.settings.portConfiguration.baudRate.isValid) {
       return false;
     }
 
@@ -606,24 +606,24 @@ export class ConnController {
     }
 
     // Check based on connection type
-    const connectionType = this.app.settings.portConfiguration.connectionType;
+    const connectionType = this.session.settings.portConfiguration.connectionType;
 
     if (connectionType === ConnectionType.SERIAL_PORT) {
       // For serial ports, need a selected port
-      return this.app.settings.portConfiguration.selectedSerialPort !== null;
+      return this.session.settings.portConfiguration.selectedSerialPort !== null;
     } else if (connectionType === ConnectionType.SOCKET) {
-      const host = this.app.settings.portConfiguration.socketHost;
+      const host = this.session.settings.portConfiguration.socketHost;
       if (host === '') {
         return false;
       }
 
-      const port = this.app.settings.portConfiguration.socketPort;
+      const port = this.session.settings.portConfiguration.socketPort;
       if (port <= 0 || port > 65535) {
         return false;
       }
 
       // Check if the socket connection timeout is valid
-      if (!this.app.settings.portConfiguration.socketConnTimeoutMs.isValid) {
+      if (!this.session.settings.portConfiguration.socketConnTimeoutMs.isValid) {
         return false;
       }
 
@@ -632,7 +632,7 @@ export class ConnController {
       // For Bluetooth, need a selected device
       return this.bluetoothLEController.selectedBluetoothDevice !== null;
     } else if (connectionType === ConnectionType.RTT) {
-      const portConfig = this.app.settings.portConfiguration;
+      const portConfig = this.session.settings.portConfiguration;
       if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
         return false;
       }

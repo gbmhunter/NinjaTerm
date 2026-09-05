@@ -1,6 +1,6 @@
 import { comparer, makeAutoObservable, reaction, runInAction } from "mobx";
 
-import { App } from "src/model/App";
+import type { Session } from "src/model/Session/Session";
 import { Macro, TxStepBreak, TxStepData } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 import { ConnState } from "src/model/Settings/PortSettings/PortSettings";
@@ -8,7 +8,7 @@ import { ConnState } from "src/model/Settings/PortSettings/PortSettings";
 export const NUM_MACROS = 8;
 
 export class MacroController {
-  app: App;
+  session: Session;
 
   macrosArray: Macro[] = [];
 
@@ -39,8 +39,8 @@ export class MacroController {
   /** Disposer for the MobX reaction that drives the interval-timer lifecycle. */
   private _intervalReactionDispose: (() => void) | null = null;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
 
     this.recreateMacros(NUM_MACROS);
 
@@ -51,7 +51,7 @@ export class MacroController {
     // Macros are part of a profile, so they have to be re-read when one is
     // loaded. Without this, loading a profile restored everything except the
     // macros, which kept the previous profile's until the app restarted.
-    this.app.profileManager.registerOnConfigReload(['terminal.macroController'], () => {
+    this.session.registerOnConfigReload(['terminal.macroController'], () => {
       this._loadConfig();
     });
 
@@ -61,7 +61,7 @@ export class MacroController {
     // tracker returns a fresh object each call.
     this._intervalReactionDispose = reaction(
       () => ({
-        opened: this.app.connController.connState === ConnState.OPENED,
+        opened: this.session.connController.connState === ConnState.OPENED,
         macroStates: this.macrosArray.map((m) => ({
           sendOnInterval: m.sendOnInterval,
           intervalMs: m.intervalMs,
@@ -88,11 +88,11 @@ export class MacroController {
         new Macro(
           `M${i + 1}`,
           () => {
-            if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+            if (this.session.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
               return "\n";
-            } else if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+            } else if (this.session.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
               return "\r";
-            } else if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+            } else if (this.session.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
               return "\r\n";
             } else {
               throw new Error("Unknown enter key press behavior");
@@ -125,26 +125,26 @@ export class MacroController {
       // Determine type of item in array. If data, write to port. If break, send a break.
       const currStep = outputData.steps[i];
       if (currStep instanceof TxStepData) {
-        this.app.writeBytesToSerialPort(currStep.data);
+        this.session.writeBytesToSerialPort(currStep.data);
       } else if (currStep instanceof TxStepBreak) {
-        await this.app.sendBreakSignal();
+        await this.session.sendBreakSignal();
       }
     }
   }
 
   _saveConfig = () => {
 
-    const config = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
+    const config = this.session.config.terminal.macroController;
 
     config.macroConfigs = this.macrosArray.map((macro) => {
       return macro.toConfig();
     });
 
-    this.app.profileManager.saveAppData();
+    this.session.saveAppData();
   };
 
   _loadConfig() {
-    const configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
+    const configToLoad = this.session.config.terminal.macroController;
 
     // Batched: recreateMacros() splices macrosArray, which the interval-timer
     // reaction tracks. Without this the reaction would fire mid-rebuild, once
@@ -242,7 +242,7 @@ export class MacroController {
    * Called by the MobX `reaction` set up in the constructor.
    */
   private _refreshIntervalTimers(): void {
-    const opened = this.app.connController.connState === ConnState.OPENED;
+    const opened = this.session.connController.connState === ConnState.OPENED;
 
     // Build the desired set of (macro, intervalMs) pairs.
     const desired = new Map<Macro, number>();

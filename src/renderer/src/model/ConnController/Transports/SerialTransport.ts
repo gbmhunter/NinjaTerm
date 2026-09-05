@@ -1,4 +1,4 @@
-import { App } from '../../App';
+import type { Session } from '../../Session/Session';
 import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
@@ -18,15 +18,15 @@ export class SerialTransport implements Transport {
   readonly selfManagesReconnection = false;
   readonly selfManagesState = false;
 
-  private app: App;
+  private session: Session;
 
   /** Path of the currently open port, or null. Also filters incoming events. */
   private portPath: string | null = null;
 
   private disposers: Array<() => void> = [];
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
   }
 
   /** The path this transport currently has open. Used for flow-control polling. */
@@ -35,14 +35,14 @@ export class SerialTransport implements Transport {
   }
 
   validate(): string | null {
-    if (!this.app.settings.portConfiguration.selectedSerialPort) {
+    if (!this.session.settings.portConfiguration.selectedSerialPort) {
       return 'No serial port selected. Please select a port from the Port Settings.';
     }
     return null;
   }
 
   async open(callbacks: TransportCallbacks): Promise<OpenOutcome> {
-    const config = this.app.settings.portConfiguration;
+    const config = this.session.settings.portConfiguration;
     const selectedPort = config.selectedSerialPort;
 
     try {
@@ -72,9 +72,9 @@ export class SerialTransport implements Transport {
     this.subscribe(callbacks);
 
     // Remember this port so it can be reopened if the app is restarted.
-    this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath =
+    this.session.config.settings.portSettings.lastUsedSerialPortPath =
       selectedPort.path;
-    this.app.profileManager.saveAppData();
+    this.session.saveAppData();
 
     return { success: true };
   }
@@ -115,7 +115,7 @@ export class SerialTransport implements Transport {
     }
     this.portPath = null;
     this.disposeListeners();
-    this.app.profileManager.saveAppData();
+    this.session.saveAppData();
   }
 
   async write(bytes: Uint8Array): Promise<void> {
@@ -150,7 +150,7 @@ export class SerialTransport implements Transport {
   }
 
   reconnectedMessage() {
-    return `Automatically reconnected to port: ${this.app.settings.portConfiguration.selectedSerialPort?.path}`;
+    return `Automatically reconnected to port: ${this.session.settings.portConfiguration.selectedSerialPort?.path}`;
   }
 
   /**
@@ -159,7 +159,7 @@ export class SerialTransport implements Transport {
    */
   async canAttemptReconnect(): Promise<boolean> {
     const lastUsedPortPath =
-      this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath;
+      this.session.config.settings.portSettings.lastUsedSerialPortPath;
     if (!lastUsedPortPath) {
       return false;
     }
@@ -175,7 +175,7 @@ export class SerialTransport implements Transport {
       return false;
     }
 
-    this.app.settings.portConfiguration.setSelectedSerialPort(matchingPort);
+    this.session.settings.portConfiguration.setSelectedSerialPort(matchingPort);
     return true;
   }
 }

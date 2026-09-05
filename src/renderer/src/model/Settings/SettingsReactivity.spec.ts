@@ -6,7 +6,7 @@ import { DataType } from './RxSettings/RxSettings';
 
 /**
  * Guards the assumption the settings classes are built on: that the persisted
- * config tree under `appData.currentAppConfig` is MobX-observable, and is so
+ * config tree under `appData.sessions[i].config` is MobX-observable, and is so
  * on *every* path that produces it.
  *
  * It was not. `AppData`, `ProfileConfig` and the `*Data` classes are classes,
@@ -32,7 +32,7 @@ describe('config tree observability', () => {
    * one means the leaf is a dead plain property.
    */
   function observeLeafWrite(app: App): DataType[] {
-    const rxConfig = app.profileManager.appData.currentAppConfig.settings.rxSettings;
+    const rxConfig = app.activeSession.config.settings.rxSettings;
     const seen: DataType[] = [];
     const dispose = autorun(() => {
       seen.push(rxConfig.dataType);

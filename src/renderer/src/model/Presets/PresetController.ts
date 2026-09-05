@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { App } from 'src/model/App';
+import type { Session } from 'src/model/Session/Session';
 import { ConfigPatch, Preset } from './Preset';
 import { BUILT_IN_PRESETS } from './presets';
 import { ALL_PRESET_CATEGORIES, ConfigBranch, PresetCategory, branchesForScope, categoryDef, getAtPath, normalizeScope, setAtPath } from './PresetScope';
@@ -58,7 +58,7 @@ export function flattenPatch(patch: ConfigPatch): [string, unknown][] {
 }
 
 export class PresetController {
-  app: App;
+  session: Session;
 
   builtInPresets = BUILT_IN_PRESETS;
 
@@ -77,14 +77,14 @@ export class PresetController {
    */
   _undoSnapshot: { branches: ConfigBranch[]; values: Record<string, unknown> } | null = null;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
     makeAutoObservable(this);
   }
 
-  /** Reloads the parts of the app affected by the given branches. */
+  /** Reloads the parts of the session affected by the given branches. */
   _notifyBranchesChanged = (branches: ConfigBranch[]) => {
-    this.app.profileManager.notifyConfigReloaded(branches);
+    this.session.notifyConfigReloaded(branches);
   };
 
   setSearchText = (value: string) => {
@@ -98,7 +98,7 @@ export class PresetController {
    * built-ins are there to be discovered once.
    */
   get rows(): PresetRow[] {
-    const storedRows: PresetRow[] = this.app.profileManager.appData.presets.map(
+    const storedRows: PresetRow[] = this.session.profileManager.appData.presets.map(
       (stored, index) => {
         const preset: Preset = {
           id: `user-${index}`,
@@ -152,7 +152,7 @@ export class PresetController {
    * matches. Pure — safe to call while rendering.
    */
   computeChanges = (preset: Preset): SettingChange[] => {
-    const config = this.app.profileManager.appData.currentAppConfig;
+    const config = this.session.config;
     const changes: SettingChange[] = [];
     for (const [path, newValue] of flattenPatch(preset.patch)) {
       const oldValue = getAtPath(config, path);
@@ -192,7 +192,7 @@ export class PresetController {
    * definitions stay declarative.
    */
   applyPreset = async (preset: Preset) => {
-    const config = this.app.profileManager.appData.currentAppConfig;
+    const config = this.session.config;
     const branches = branchesForScope(preset.scope);
 
     // Work out what to do about the serial connection before touching anything.
@@ -202,10 +202,10 @@ export class PresetController {
     const portAction = await this._resolvePortActionFor(preset, branches);
 
     if (portAction.kind === 'connect') {
-      if (this.app.connController.connState === ConnState.OPENED) {
-        await this.app.connController.closeConnection({ silenceSnackbar: true });
-      } else if (this.app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.connController.stopWaitingToReopenPort();
+      if (this.session.connController.connState === ConnState.OPENED) {
+        await this.session.connController.closeConnection({ silenceSnackbar: true });
+      } else if (this.session.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+        this.session.connController.stopWaitingToReopenPort();
       }
     }
 
@@ -227,20 +227,20 @@ export class PresetController {
         setAtPath(config, path, value);
       }
 
-      this.app.profileManager.saveAppData();
+      this.session.profileManager.saveAppData();
       // Before opening the port, so the preset's baud rate is live by the time it
       // does.
       this._notifyBranchesChanged(branches);
 
-      this.app.profileManager.lastAppliedPresetName = preset.name;
+      this.session.lastAppliedPresetName = preset.name;
       this.presetPendingConfirmation = null;
     });
 
     let message = `Applied the "${preset.name}" preset.`;
     let variant: 'success' | 'warning' = 'success';
     if (portAction.kind === 'connect') {
-      this.app.connController.setSelectedPort(portAction.port);
-      await this.app.connController.openConnection({ silenceSnackbar: true });
+      this.session.connController.setSelectedPort(portAction.port);
+      await this.session.connController.openConnection({ silenceSnackbar: true });
       message += `
 Connected to ${portAction.port.path}.`;
     } else if (portAction.kind === 'warn') {
@@ -248,7 +248,7 @@ Connected to ${portAction.port.path}.`;
 ${portAction.message}`;
       variant = 'warning';
     }
-    this.app.snackbar.sendToSnackbar(message, variant);
+    this.session.snackbar.sendToSnackbar(message, variant);
   };
 
   /**
@@ -262,7 +262,7 @@ ${portAction.message}`;
     const desiredPath =
       (getAtPath(preset.patch, 'settings.portSettings.lastUsedSerialPortPath') as string) ?? '';
     const currentPath =
-      this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath;
+      this.session.config.settings.portSettings.lastUsedSerialPortPath;
     if (desiredPath === '' || desiredPath === currentPath) {
       return resolvePortAction(true, desiredPath, currentPath, []);
     }
@@ -278,7 +278,7 @@ ${portAction.message}`;
     if (this._undoSnapshot === null) {
       return;
     }
-    const config = this.app.profileManager.appData.currentAppConfig;
+    const config = this.session.config;
     const { branches, values } = this._undoSnapshot;
     for (const branch of branches) {
       const value = values[branch];
@@ -288,10 +288,10 @@ ${portAction.message}`;
     }
     this._undoSnapshot = null;
 
-    this.app.profileManager.saveAppData();
+    this.session.profileManager.saveAppData();
     this._notifyBranchesChanged(branches);
 
-    this.app.snackbar.sendToSnackbar('Settings restored.', 'info');
+    this.session.snackbar.sendToSnackbar('Settings restored.', 'info');
   };
 
   //================================================================================
@@ -303,7 +303,7 @@ ${portAction.message}`;
 
   openSaveDialog = () => {
     this.saveDialog = {
-      name: this.app.profileManager.nextUnusedPresetName(),
+      name: this.session.profileManager.nextUnusedPresetName(),
       // Everything by default: capturing the current setup whole is the common
       // case, and unticking a category is easier than finding the ones you want.
       scope: [...ALL_PRESET_CATEGORIES],
@@ -364,7 +364,7 @@ ${portAction.message}`;
       return null;
     }
     const name = this.saveDialog.name.trim().toLowerCase();
-    const index = this.app.profileManager.appData.presets.findIndex(
+    const index = this.session.profileManager.appData.presets.findIndex(
       (preset) => preset.name.toLowerCase() === name,
     );
     return index === -1 ? null : index;
@@ -377,11 +377,11 @@ ${portAction.message}`;
     const { name, scope } = this.saveDialog;
     const overwriteIndex = this.saveDialogOverwriteIndex;
     if (overwriteIndex !== null) {
-      this.app.profileManager.savePreset(overwriteIndex, normalizeScope(scope), true);
-      this.app.snackbar.sendToSnackbar(`Preset "${name.trim()}" updated.`, 'success');
+      this.session.profileManager.savePreset(overwriteIndex, normalizeScope(scope), true);
+      this.session.snackbar.sendToSnackbar(`Preset "${name.trim()}" updated.`, 'success');
     } else {
-      this.app.profileManager.newPreset(name.trim(), normalizeScope(scope));
-      this.app.snackbar.sendToSnackbar(`Preset "${name.trim()}" saved.`, 'success');
+      this.session.profileManager.newPreset(name.trim(), normalizeScope(scope));
+      this.session.snackbar.sendToSnackbar(`Preset "${name.trim()}" saved.`, 'success');
     }
     this.saveDialog = null;
   };
@@ -391,7 +391,7 @@ ${portAction.message}`;
     if (row.storedIndex === null) {
       return;
     }
-    this.app.profileManager.savePreset(row.storedIndex);
+    this.session.profileManager.savePreset(row.storedIndex);
   };
 
   deleteStoredPreset = (row: PresetRow) => {
@@ -399,7 +399,7 @@ ${portAction.message}`;
       return;
     }
     const name = row.preset.name;
-    this.app.profileManager.deletePreset(row.storedIndex);
-    this.app.snackbar.sendToSnackbar(`Deleted preset "${name}".`, 'info');
+    this.session.profileManager.deletePreset(row.storedIndex);
+    this.session.snackbar.sendToSnackbar(`Deleted preset "${name}".`, 'info');
   };
 }

@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import type { TxSettingsData } from 'src/model/AppDataManager/DataClasses/TxSettingsData';
 import { SettingsBranch } from '../SettingsBranch';
 
@@ -54,7 +55,12 @@ export enum DeleteKeyPressBehavior {
 
 export default class TxSettings {
 
-  profileManager: AppDataManager;
+  session: Session;
+
+  /** App-wide data (presets, MCP flags). Reached through the session. */
+  get profileManager(): AppDataManager {
+    return this.session.app.profileManager;
+  }
 
   /** See `SettingsBranch` for how this class relates to `TxSettingsData`. */
   private readonly branch = new SettingsBranch<TxSettingsData>(
@@ -118,9 +124,9 @@ export default class TxSettings {
   get useCtrlFForFind() { return this.branch.data.useCtrlFForFind; }
   setUseCtrlFForFind = this.branch.setter('useCtrlFForFind');
 
-  constructor(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
-    this.branch.attach(profileManager);
-    makeAutoObservable<TxSettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
+  constructor(session: Session) {
+    this.session = session;
+    this.branch.attach(session);
+    makeAutoObservable<TxSettings, 'branch'>(this, { branch: false, session: false }); // Make sure this is at the end of the constructor
   }
 }

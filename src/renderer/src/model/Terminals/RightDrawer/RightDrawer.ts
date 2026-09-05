@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { MacroController } from './Macros/MacroController';
-import { App } from 'src/model/App';
+import type { Session } from 'src/model/Session/Session';
 import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
 /**
@@ -69,9 +69,9 @@ export default class RightDrawer {
     this.branch.set('flowControlIsExpanded', isExpanded);
   };
 
-  constructor(app: App) {
-    this.macroController = new MacroController(app);
-    this.branch.attach(app.profileManager);
+  constructor(session: Session) {
+    this.macroController = new MacroController(session);
+    this.branch.attach(session);
 
     makeAutoObservable<RightDrawer, 'branch'>(this, { branch: false }); // Make sure this near the end
   }
