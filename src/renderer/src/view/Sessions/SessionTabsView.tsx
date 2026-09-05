@@ -79,13 +79,16 @@ const TabLabel = observer(({ session, canClose, onClose }: { session: Session; c
 /**
  * The strip of session tabs above the main pane. One tab per open session;
  * the "+" opens a new one with default settings. Right-click a tab for rename,
- * duplicate, reorder and close; double-click to rename.
+ * duplicate, reorder and close; double-click to rename; drag a tab onto
+ * another to take its place.
  */
 export default observer((props: Props) => {
   const { app } = props;
 
   const [menu, setMenu] = useState<{ session: Session; left: number; top: number } | null>(null);
   const [rename, setRename] = useState<{ session: Session; value: string } | null>(null);
+  /** The tab being dragged and the tab it is currently over, during a reorder. */
+  const [drag, setDrag] = useState<{ id: string; overId: string | null } | null>(null);
 
   const sessions = app.sessions;
   const canClose = sessions.length > 1;
@@ -122,19 +125,53 @@ export default observer((props: Props) => {
           '& .MuiTab-root': { minHeight: '34px', padding: '4px 10px', textTransform: 'none', fontSize: '0.85rem' },
         }}
       >
-        {sessions.map((session) => (
-          <Tab
-            key={session.id}
-            value={session.id}
-            data-testid={`session-tab-${session.id}`}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setMenu({ session, left: e.clientX, top: e.clientY });
-            }}
-            onDoubleClick={() => setRename({ session, value: session.name })}
-            label={<TabLabel session={session} canClose={canClose} onClose={() => void app.closeSession(session.id)} />}
-          />
-        ))}
+        {sessions.map((session, index) => {
+          const isDragging = drag !== null && drag.id === session.id;
+          const isDropTarget = drag !== null && drag.overId === session.id && !isDragging;
+          return (
+            <Tab
+              key={session.id}
+              value={session.id}
+              data-testid={`session-tab-${session.id}`}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setMenu({ session, left: e.clientX, top: e.clientY });
+              }}
+              onDoubleClick={() => setRename({ session, value: session.name })}
+              // HTML5 drag-and-drop. Dropping on a tab moves the dragged session
+              // into that tab's slot, shifting the others along.
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', session.id);
+                setDrag({ id: session.id, overId: null });
+              }}
+              onDragOver={(e) => {
+                if (drag === null) return;
+                e.preventDefault(); // allow the drop
+                e.dataTransfer.dropEffect = 'move';
+                if (drag.overId !== session.id) setDrag({ ...drag, overId: session.id });
+              }}
+              onDragLeave={() => {
+                if (drag !== null && drag.overId === session.id) setDrag({ ...drag, overId: null });
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const draggedId = drag?.id ?? e.dataTransfer.getData('text/plain');
+                if (draggedId) app.moveSessionTo(draggedId, index);
+                setDrag(null);
+              }}
+              onDragEnd={() => setDrag(null)}
+              sx={{
+                opacity: isDragging ? 0.4 : 1,
+                // Highlight the slot the dragged tab would take.
+                boxShadow: isDropTarget ? 'inset 0 0 0 1px #5eead4' : 'none',
+                borderRadius: isDropTarget ? '4px' : 0,
+              }}
+              label={<TabLabel session={session} canClose={canClose} onClose={() => void app.closeSession(session.id)} />}
+            />
+          );
+        })}
       </Tabs>
 
       <Tooltip title="New session" disableInteractive>

@@ -147,6 +147,32 @@ describe('sessions', () => {
     expect(app.sessions[0]).toBe(second);
   });
 
+  test('moveSessionTo takes the target slot, clamps, and persists', () => {
+    const a = app.activeSession;
+    const b = app.newSession({ name: 'B' });
+    const c = app.newSession({ name: 'C' });
+    const d = app.newSession({ name: 'D' });
+    const order = () => app.sessions.map((s) => s.name);
+    const persisted = () => app.profileManager.appData.sessions.map((s) => s.name);
+
+    // Drop D onto A's slot: D moves to the front, the rest shift right.
+    app.moveSessionTo(d.id, 0);
+    expect(order()).toEqual(['D', 'Session 1', 'B', 'C']);
+    expect(persisted()).toEqual(order());
+
+    // Drop A onto C's slot: A moves right, B and C shift left.
+    app.moveSessionTo(a.id, 3);
+    expect(order()).toEqual(['D', 'B', 'C', 'Session 1']);
+
+    // Out of range clamps; same slot is a no-op.
+    app.moveSessionTo(b.id, 99);
+    expect(order()).toEqual(['D', 'C', 'Session 1', 'B']);
+    app.moveSessionTo(c.id, 1);
+    expect(order()).toEqual(['D', 'C', 'Session 1', 'B']);
+    expect(persisted()).toEqual(order());
+    expect(app.activeSession).toBe(d);
+  });
+
   test('sessions, their settings and the active one survive a restart', () => {
     const first = app.activeSession;
     const second = app.newSession({ name: 'Serial' });

@@ -298,11 +298,18 @@ export class App {
     this.sessions.find((s) => s.id === id)?.setName(name);
   };
 
-  /** Moves a session's tab one place left (-1) or right (+1). */
-  moveSession = (id: string, delta: 1 | -1) => {
+  /**
+   * Moves a session's tab so it sits at `targetIndex` in the strip. The target
+   * is clamped to the strip; moving a tab onto its own position is a no-op.
+   * Used by drag-and-drop, where "drop on a tab" means "take that tab's slot".
+   */
+  moveSessionTo = (id: string, targetIndex: number) => {
     const index = this.sessions.findIndex((s) => s.id === id);
-    const target = index + delta;
-    if (index === -1 || target < 0 || target >= this.sessions.length) {
+    if (index === -1) {
+      return;
+    }
+    const target = Math.max(0, Math.min(this.sessions.length - 1, targetIndex));
+    if (target === index) {
       return;
     }
     const appData = this.profileManager.appData;
@@ -312,6 +319,16 @@ export class App {
     const [data] = appData.sessions.splice(dataIndex, 1);
     appData.sessions.splice(target, 0, data);
     this.profileManager.saveAppData();
+  };
+
+  /** Moves a session's tab one place left (-1) or right (+1). */
+  moveSession = (id: string, delta: 1 | -1) => {
+    const index = this.sessions.findIndex((s) => s.id === id);
+    const target = index + delta;
+    if (index === -1 || target < 0 || target >= this.sessions.length) {
+      return;
+    }
+    this.moveSessionTo(id, target);
   };
 
   //================================================================================

@@ -52,6 +52,25 @@ test.describe('sessions (Electron)', () => {
     expect(await page.evaluate(() => window.app.activeSession.id)).toBe(firstId);
   });
 
+  test('dragging a tab onto another moves it into that slot', async () => {
+    const page = appTestHarness.page;
+    await page.getByTestId('new-session-button').click();
+    await page.getByTestId('new-session-button').click();
+    const ids: string[] = await page.evaluate(() => window.app.sessions.map((s) => s.id));
+    expect(await page.evaluate(() => window.app.sessions.map((s) => s.name))).toEqual(['Session 1', 'Session 2', 'Session 3']);
+
+    // Drag the third tab onto the first.
+    await page.dragAndDrop(`[data-testid="session-tab-${ids[2]}"]`, `[data-testid="session-tab-${ids[0]}"]`);
+
+    expect(await page.evaluate(() => window.app.sessions.map((s) => s.name))).toEqual(['Session 3', 'Session 1', 'Session 2']);
+    // The strip renders in the new order.
+    const tabs = page.getByTestId('session-tabs').locator('[role="tab"]');
+    await expect(tabs.first()).toContainText('Session 3');
+    await expect(tabs.last()).toContainText('Session 2');
+    // Persisted in the same order.
+    expect(await page.evaluate(() => window.app.profileManager.appData.sessions.map((s) => s.name))).toEqual(['Session 3', 'Session 1', 'Session 2']);
+  });
+
   test('received data lands in the session that owns the connection', async () => {
     const page = appTestHarness.page;
 
