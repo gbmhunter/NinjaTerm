@@ -54,9 +54,6 @@ describe('App cleanup', () => {
   });
 
   test('cleanup cancels the CPU-monitor animation frame', () => {
-    // jsdom does not implement media playback; cleanup pauses the sound
-    // player's <audio> elements, which would otherwise log "Not implemented".
-    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
     const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame');
     const app = new App();
     // The constructor scheduled a frame...

@@ -35,6 +35,10 @@ vi.mock('electron-log/renderer.js', () => ({
   },
 }))
 
+// jsdom does not implement media playback. `App.cleanup()` pauses the sound
+// player's <audio> elements, which would otherwise log "Not implemented".
+HTMLMediaElement.prototype.pause = vi.fn();
+
 // Mock Electron APIs
 beforeEach(() => {
   // The real preload returns a per-listener disposer from every `on*` method
