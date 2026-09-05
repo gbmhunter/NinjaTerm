@@ -7,15 +7,24 @@ import { randomUUID } from 'crypto';
 import { BrowserWindow } from 'electron';
 
 import { log } from './Logging';
+import { RxStreamBuffer } from './RxStreamBuffer';
 import { getActivePortPath, writeToPort, listPorts } from './serialService';
 
 const REQUEST_TIMEOUT_MS = 5000;
+
+/**
+ * Most characters the `rxstream` resource holds per session between reads.
+ * Bounds main-process memory for a client that subscribes and never reads
+ * (or disconnects without closing its session). Comfortably above what a
+ * client polling every few seconds sees at typical serial rates.
+ */
+const RX_STREAM_BUFFER_MAX_CHARS = 1_000_000;
 
 export class McpService {
   private httpServer: Server | null = null;
   private mainWindow: BrowserWindow | null = null;
   /** Active sessions keyed by session ID. A new entry is created for each initialize request. */
-  private sessions = new Map<string, { mcpServer: McpServer; transport: StreamableHTTPServerTransport; rxBuffer: { text: string } }>();
+  private sessions = new Map<string, { mcpServer: McpServer; transport: StreamableHTTPServerTransport; rxBuffer: RxStreamBuffer }>();
   private registeredPort: number = 0;
 
   /**
@@ -89,7 +98,7 @@ export class McpService {
 
         if (!sessionId) {
           // New session: create a fresh McpServer + transport pair
-          const rxBuffer = { text: '' };
+          const rxBuffer = new RxStreamBuffer(RX_STREAM_BUFFER_MAX_CHARS);
           const transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => randomUUID(),
             onsessioninitialized: (id) => {
@@ -167,12 +176,12 @@ export class McpService {
    */
   handleRxData(text: string) {
     for (const [, session] of this.sessions) {
-      session.rxBuffer.text += text;
+      session.rxBuffer.append(text);
       session.mcpServer.server.sendResourceUpdated({ uri: 'ninjaterm://terminal/rxstream' }).catch(() => {});
     }
   }
 
-  private registerTools(server: McpServer, rxBuffer: { text: string }) {
+  private registerTools(server: McpServer, rxBuffer: RxStreamBuffer) {
 
     server.tool(
       'get_terminal_output',
@@ -256,11 +265,12 @@ export class McpService {
         description:
           'Real-time stream of incoming serial data. Subscribe to receive push notifications ' +
           '(notifications/resources/updated) when new data arrives, then read this resource to ' +
-          'retrieve buffered data since the last read. For historical data use the get_terminal_output tool.',
+          'retrieve buffered data since the last read. For historical data use the get_terminal_output tool. ' +
+          `At most the last ${RX_STREAM_BUFFER_MAX_CHARS} characters are kept between reads; if the buffer ` +
+          'overflows the oldest data is dropped and the next read starts with a one-line notice saying how much.',
       },
       async () => {
-        const data = rxBuffer.text;
-        rxBuffer.text = '';
+        const data = rxBuffer.drain();
         return {
           contents: [{ uri: 'ninjaterm://terminal/rxstream', mimeType: 'text/plain', text: data }],
         };

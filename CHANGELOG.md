@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Find supports regular expressions.** A `.*` toggle in the Find bar switches the query to a regex (the case toggle still applies); an invalid pattern shows `Invalid`, with the compile error on hover. Filters and Highlight Rules already took regex.
+
 ### Fixed
 
+- **The MCP `rxstream` buffer is capped.** A session that subscribed but never read the resource held the entire serial stream in main-process memory for the life of the app; `RxStreamBuffer` keeps the last 1,000,000 characters, drops the oldest, and prefixes the next read with a one-line notice of how much was dropped.
+- **Closing the window now stops the CPU-usage monitor.** `stopCpuMonitoring` was an empty method; the `requestAnimationFrame` loop now records its handle and cleanup cancels it, along with any pending idle callback.
 - **Toggling ANSI parsing from a fake port now sticks.** `FakePortsController` wrote `rxSettings.ansiEscapeCodeParsingEnabled` directly, which only ever reached the runtime copy of the setting; the persisted value kept the old state and a preset or restart silently reverted it. Seven such writes now go through the setter — and the settings classes no longer *have* a runtime copy to bypass.
 - **Applying a preset that names a serial port now connects to that port.** `setSelectedPort` wrote a `serialPortInfo` field nothing read, so the open used whichever port was selected in the UI — or failed outright — while the snackbar reported the preset's port. The serial reconnection poller went through the same call and was equally ineffective.
 - **Packaged builds no longer download the React DevTools extension on every launch.** `installExtension` ran unconditionally, so a shipped build fetched an extension from Google's CDN at startup and installed it with file access; now guarded by `app.isPackaged`.

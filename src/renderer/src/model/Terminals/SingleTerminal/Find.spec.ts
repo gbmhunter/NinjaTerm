@@ -186,4 +186,59 @@ describe('find-in-scrollback', () => {
     const bananaRowIdx = terminal.filteredTerminalRows.findIndex((r) => r.text.startsWith('banana'));
     expect(bananaRowIdx).toBe(-1);
   });
+
+  test('regex mode finds every match of a pattern', () => {
+    terminal.parseData(stringToUint8Array('err1 err22\nok\nerr333\n'), DataDirection.RX);
+    terminal.openFind();
+    terminal.setFindUseRegex(true);
+    terminal.setFindQuery('err\\d+');
+    expect(terminal.findMatches).toEqual([
+      { rowIndex: 0, colStart: 0, colEnd: 4 },
+      { rowIndex: 0, colStart: 5, colEnd: 10 },
+      { rowIndex: 2, colStart: 0, colEnd: 6 },
+    ]);
+  });
+
+  test('regex mode honours the case-sensitivity toggle', () => {
+    terminal.parseData(stringToUint8Array('Error error ERROR\n'), DataDirection.RX);
+    terminal.openFind();
+    terminal.setFindUseRegex(true);
+    terminal.setFindQuery('error');
+    expect(terminal.findMatches.length).toBe(3);
+    terminal.setFindCaseSensitive(true);
+    expect(terminal.findMatches).toEqual([{ rowIndex: 0, colStart: 6, colEnd: 11 }]);
+  });
+
+  test('an invalid regex yields no matches and an error message rather than throwing', () => {
+    terminal.parseData(stringToUint8Array('hello\n'), DataDirection.RX);
+    terminal.openFind();
+    terminal.setFindUseRegex(true);
+    terminal.setFindQuery('[unclosed');
+    expect(terminal.findMatches).toEqual([]);
+    expect(terminal.findRegex.errorMsg).not.toBe('');
+    // Back in substring mode the same text is a literal that simply doesn't occur.
+    terminal.setFindUseRegex(false);
+    expect(terminal.findRegex.errorMsg).toBe('');
+    expect(terminal.findMatches).toEqual([]);
+  });
+
+  test('zero-width regex matches neither hang nor get reported', () => {
+    terminal.parseData(stringToUint8Array('abc\n'), DataDirection.RX);
+    terminal.openFind();
+    terminal.setFindUseRegex(true);
+    terminal.setFindQuery('x*');
+    expect(terminal.findMatches).toEqual([]);
+    terminal.setFindQuery('b*');
+    expect(terminal.findMatches).toEqual([{ rowIndex: 0, colStart: 1, colEnd: 2 }]);
+  });
+
+  test('toggling regex mode resets the current match to the first', () => {
+    terminal.parseData(stringToUint8Array('aa aa aa\n'), DataDirection.RX);
+    terminal.openFind();
+    terminal.setFindQuery('aa');
+    terminal.nextMatch();
+    expect(terminal.currentMatchIndex).toBe(1);
+    terminal.setFindUseRegex(true);
+    expect(terminal.currentMatchIndex).toBe(0);
+  });
 });

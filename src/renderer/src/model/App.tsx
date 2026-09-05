@@ -131,6 +131,15 @@ export class App {
   // CPU monitoring variables - measuring overall renderer process load
   private readonly CPU_MEASUREMENT_WINDOW_MS = 1000; // 1 second window
 
+  /**
+   * The CPU monitor's pending animation frame, so `stopCpuMonitoring` can
+   * cancel it. Null when the monitor is not running.
+   */
+  private cpuMonitorRafHandle: number | null = null;
+
+  /** The CPU monitor's pending idle callback, if one is outstanding. */
+  private cpuMonitorIdleHandle: number | null = null;
+
   // If true app is being tested by code.
   // Used for force terminal height to value when browser is not
   // available to determine height
@@ -273,6 +282,9 @@ export class App {
       // no subscriber.
       rxDataPoints: false,
       txDataPoints: false,
+      // Written once per animation frame; nothing observes them.
+      cpuMonitorRafHandle: false,
+      cpuMonitorIdleHandle: false,
     } as any); // Make sure this near the end
   }
 
@@ -456,7 +468,8 @@ export class App {
 
       // Use requestIdleCallback to get more accurate idle time measurements
       if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback((deadline) => {
+        this.cpuMonitorIdleHandle = requestIdleCallback((deadline) => {
+          this.cpuMonitorIdleHandle = null;
           // If we have very little idle time, we're CPU bound
           const availableTime = deadline.timeRemaining();
           if (availableTime < 1) { // Less than 1ms idle time indicates high CPU usage
@@ -465,8 +478,9 @@ export class App {
         });
       }
 
-      // Continue monitoring
-      requestAnimationFrame(measureCpuUsage);
+      // Continue monitoring. Keep the handle so `stopCpuMonitoring` can end
+      // the loop; before this it ran until the window unloaded.
+      this.cpuMonitorRafHandle = requestAnimationFrame(measureCpuUsage);
     };
 
     measureCpuUsage();
@@ -476,8 +490,14 @@ export class App {
    * Stops CPU monitoring.
    */
   private stopCpuMonitoring() {
-    // CPU monitoring is handled by requestAnimationFrame and requestIdleCallback
-    // These will stop when the window is unloaded
+    if (this.cpuMonitorRafHandle !== null) {
+      cancelAnimationFrame(this.cpuMonitorRafHandle);
+      this.cpuMonitorRafHandle = null;
+    }
+    if (this.cpuMonitorIdleHandle !== null && typeof cancelIdleCallback !== 'undefined') {
+      cancelIdleCallback(this.cpuMonitorIdleHandle);
+      this.cpuMonitorIdleHandle = null;
+    }
   }
 
   /**

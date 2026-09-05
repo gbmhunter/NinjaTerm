@@ -47,3 +47,28 @@ describe('App rate-tracking buffers', () => {
     expect(length).toBeLessThanOrEqual(4096);
   });
 });
+
+describe('App cleanup', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  test('cleanup cancels the CPU-monitor animation frame', () => {
+    // jsdom does not implement media playback; cleanup pauses the sound
+    // player's <audio> elements, which would otherwise log "Not implemented".
+    vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame');
+    const app = new App();
+    // The constructor scheduled a frame...
+    const handle = (app as any).cpuMonitorRafHandle;
+    expect(handle).not.toBeNull();
+
+    app.cleanup();
+
+    // ...and cleanup cancelled that exact frame. `stopCpuMonitoring` used to
+    // be an empty method, so the loop ran until the window unloaded.
+    expect(cancelSpy).toHaveBeenCalledWith(handle);
+    expect((app as any).cpuMonitorRafHandle).toBeNull();
+    cancelSpy.mockRestore();
+  });
+});
