@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import { StoredPreset } from "./StoredPreset";
-import { ProfileConfig } from "./ProfileConfig";
+import { SessionData } from "./SessionData";
 
 export const LATEST_VERSION = 25;
 
@@ -17,10 +17,15 @@ export class AppData {
   presets: StoredPreset[] = [];
 
   /**
-   * Represents the current application configuration. This is saved regularly so that when the app reloads,
-   * it can restore the last known configuration.
+   * The open sessions, in tab order. Each carries its own connection settings,
+   * terminal settings, macros and so on. There is always at least one.
+   *
+   * Replaced `currentAppConfig` in v25, which was a single session's config.
    */
-  currentAppConfig = new ProfileConfig();
+  sessions: SessionData[] = [];
+
+  /** The session whose tab is selected. Always the id of one of `sessions`. */
+  activeSessionId: string = '';
 
   /**
    * Global app setting for enabling/disabling automatic updates.
@@ -42,6 +47,9 @@ export class AppData {
   constructor() {
     this.presets = [];
     this.presets.push(new StoredPreset('Default profile'));
+    const firstSession = new SessionData();
+    this.sessions = [firstSession];
+    this.activeSessionId = firstSession.id;
     makeAutoObservable(this);
   }
 }

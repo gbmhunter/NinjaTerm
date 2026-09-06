@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import { HighlightRuleData } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 import { HighlightRule } from './HighlightRule';
 
@@ -10,11 +10,11 @@ import { HighlightRule } from './HighlightRule';
  * runtime objects, the add/edit modal state, and the load/save lifecycle.
  *
  * Mirrors `MacroController`'s shape — rules are persisted as POD objects in
- * `appData.currentAppConfig.settings.rulesSettings.rules`, runtime objects
+ * the session config's `settings.rulesSettings.rules`, runtime objects
  * are recreated on every profile load.
  */
 export default class RulesSettings {
-  profileManager: AppDataManager;
+  session: Session;
 
   rules: HighlightRule[] = [];
 
@@ -23,13 +23,13 @@ export default class RulesSettings {
 
   isModalOpen: boolean = false;
 
-  constructor(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
+  constructor(session: Session) {
+    this.session = session;
     this._loadConfig();
-    this.profileManager.registerOnConfigReload(['settings.rulesSettings'], () => {
+    this.session.registerOnConfigReload(['settings.rulesSettings'], () => {
       this._loadConfig();
     });
-    makeAutoObservable(this);
+    makeAutoObservable(this, { session: false });
   }
 
   /** Append a new rule with defaults and open it in the edit modal. */
@@ -60,13 +60,13 @@ export default class RulesSettings {
   };
 
   _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.settings.rulesSettings;
+    const config = this.session.config.settings.rulesSettings;
     config.rules = this.rules.map((rule) => rule.toConfig());
-    this.profileManager.saveAppData();
+    this.session.saveAppData();
   };
 
   _loadConfig = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.settings.rulesSettings;
+    const configToLoad = this.session.config.settings.rulesSettings;
     this.rules = configToLoad.rules.map((ruleCfg) => {
       const rule = new HighlightRule(this._saveConfig);
       rule.loadConfig(ruleCfg);

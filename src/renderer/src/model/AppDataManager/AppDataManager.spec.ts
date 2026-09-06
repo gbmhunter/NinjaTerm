@@ -54,7 +54,12 @@ function updateAndCompare(savedAppData: any) {
     for (let i = 0; i < appData.presets.length; i++) {
       appData.presets[i].config.settings!.logSettings!.logDirectory = '/home/pretend_user/NinjaTerm/logs';
     }
-    appData.currentAppConfig.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
+    for (const session of appData.sessions) {
+      session.config.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
+      // Session ids are random, so a migrated blob and a fresh AppData never agree on them.
+      session.id = 'session-id';
+    }
+    appData.activeSessionId = 'session-id';
     return appData;
   }
   savedAndUpdatedAppData = userSpecificReplacer(savedAndUpdatedAppData);
@@ -212,7 +217,7 @@ describe('app data manager tests', () => {
       expect(rules[0].scope).toBe('line');
       expect(rules[1].scope).toBe('line');
     };
-    checkSlot(appData.currentAppConfig?.settings);
+    checkSlot(appData.sessions?.[0]?.config?.settings);
     for (const p of appData.presets ?? []) {
       checkSlot(p.config?.settings);
     }
@@ -235,7 +240,7 @@ describe('app data manager tests', () => {
     expect(unknownVersion).toBe(false);
     expect(wasChanged).toBe(true);
     expect(appData.version).toBe(LATEST_VERSION);
-    expect(appData.currentAppConfig?.settings?.txSettings?.useCtrlFForFind).toBe(true);
+    expect(appData.sessions?.[0]?.config?.settings?.txSettings?.useCtrlFForFind).toBe(true);
     for (const preset of appData.presets ?? []) {
       expect(preset.config?.settings?.txSettings?.useCtrlFForFind).toBe(true);
     }
@@ -260,8 +265,8 @@ describe('app data manager tests', () => {
     expect(unknownVersion).toBe(false);
     expect(wasChanged).toBe(true);
     expect(appData.version).toBe(LATEST_VERSION);
-    expect(appData.currentAppConfig?.terminal?.filters).toEqual([]);
-    expect(appData.currentAppConfig?.terminal?.rightDrawer?.flowControlIsExpanded).toBe(false);
+    expect(appData.sessions?.[0]?.config?.terminal?.filters).toEqual([]);
+    expect(appData.sessions?.[0]?.config?.terminal?.rightDrawer?.flowControlIsExpanded).toBe(false);
     for (const profile of appData.profiles ?? []) {
       expect(profile.rootConfig?.terminal?.filters).toEqual([]);
     }
@@ -313,7 +318,7 @@ describe('app data manager tests', () => {
     // Custom rule is left enabled.
     expect(profileRules?.find((r: any) => r.name === 'My custom rule')?.enabled).toBe(true);
 
-    const currentRules = appData.currentAppConfig?.settings?.rulesSettings?.rules;
+    const currentRules = appData.sessions?.[0]?.config?.settings?.rulesSettings?.rules;
     expect(currentRules?.every((r: any) => r.enabled === false)).toBe(true);
   });
 
@@ -345,7 +350,7 @@ describe('app data manager tests', () => {
     expect(appData.presets?.[0].config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
     // Custom value survives.
     expect(appData.presets?.[1].config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(40);
-    expect(appData.currentAppConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
+    expect(appData.sessions?.[0]?.config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
   });
 
   test('migration v24->v25 stores the graphing numbers as numbers and drops rightDrawer.version', () => {
@@ -383,10 +388,18 @@ describe('app data manager tests', () => {
 
     expect(appData.presets?.[1].config?.settings?.graphingSettings).toBeUndefined();
 
-    expect(appData.currentAppConfig.settings?.graphingSettings).toEqual({
+    expect(appData.sessions?.[0]?.config.settings?.graphingSettings).toEqual({
       maxBufferSize: 1000, maxNumDataPoints: 500, xAxisRangeMin: 0, xAxisRangeMax: 100, yAxisRangeMin: 0, yAxisRangeMax: 100,
     });
-    expect(appData.currentAppConfig.terminal?.rightDrawer).toEqual({ showRightDrawer: true });
+    expect(appData.sessions?.[0]?.config.terminal?.rightDrawer).toEqual({ showRightDrawer: true });
+
+    // The one config became the first session, and there is no longer a
+    // `currentAppConfig`.
+    expect(appData.sessions).toHaveLength(1);
+    expect(appData.sessions?.[0].name).toBe('Session 1');
+    expect(appData.sessions?.[0].id).toBeTruthy();
+    expect(appData.activeSessionId).toBe(appData.sessions?.[0].id);
+    expect(appData.currentAppConfig).toBeUndefined();
   });
 
   test('migration v21->v22 adds the terminal font settings', () => {
@@ -403,7 +416,7 @@ describe('app data manager tests', () => {
     expect(unknownVersion).toBe(false);
     expect(appData.version).toBe(LATEST_VERSION);
 
-    for (const rootConfig of [appData.presets?.[0].config, appData.currentAppConfig]) {
+    for (const rootConfig of [appData.presets?.[0].config, appData.sessions?.[0]?.config]) {
       expect(rootConfig?.settings?.displaySettings?.terminalFont).toBe(TerminalFont.NINJATERM);
       expect(rootConfig?.settings?.displaySettings?.terminalFontCustomName).toBe('');
     }
@@ -421,7 +434,7 @@ describe('app data manager tests', () => {
     const { appData, unknownVersion } = migrateAppData(v21Input);
 
     expect(unknownVersion).toBe(false);
-    for (const rootConfig of [appData.presets?.[0].config, appData.currentAppConfig]) {
+    for (const rootConfig of [appData.presets?.[0].config, appData.sessions?.[0]?.config]) {
       expect(rootConfig?.settings?.rxSettings?.characterEncoding).toBe(CharacterEncoding.ASCII);
     }
   });

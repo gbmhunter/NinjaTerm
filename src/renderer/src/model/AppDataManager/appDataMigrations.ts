@@ -31,6 +31,7 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
 import { GraphingSettingsData } from './DataClasses/GraphingSettingsData';
+import { newSessionId } from './DataClasses/SessionData';
 
 // --------------------------------------------------------------------------
 // Types
@@ -256,7 +257,11 @@ export type MigrationAppData = {
   profiles?: MigrationProfile[];
   // v22->v23
   presets?: MigrationPreset[];
-  currentAppConfig: MigrationRootConfig;
+  /** The one config, up to v24. Became `sessions[0].config` in v24->v25. */
+  currentAppConfig?: MigrationRootConfig;
+  // v24->v25
+  sessions?: { id: string; name: string; config: MigrationRootConfig }[];
+  activeSessionId?: string;
   // v3->v4
   autoUpdatesEnabled?: boolean;
   // v13->v14
@@ -283,7 +288,23 @@ function forEachRootConfig(
   for (const profile of appData.profiles ?? []) {
     apply(profile.rootConfig);
   }
-  apply(appData.currentAppConfig);
+  forEachSessionConfig(appData, apply);
+}
+
+/**
+ * The live config(s): the single `currentAppConfig` up to v24, or every
+ * session's config from v25 on.
+ */
+function forEachSessionConfig(
+  appData: MigrationAppData,
+  apply: (rootConfig: MigrationRootConfig) => void,
+): void {
+  if (appData.currentAppConfig !== undefined) {
+    apply(appData.currentAppConfig);
+  }
+  for (const session of appData.sessions ?? []) {
+    apply(session.config);
+  }
 }
 
 /**
@@ -303,7 +324,7 @@ function forEachPresetConfig(
       apply(preset.config);
     }
   }
-  apply(appData.currentAppConfig);
+  forEachSessionConfig(appData, apply);
 }
 
 function migrateV1toV2(appData: MigrationAppData): void {
@@ -743,7 +764,11 @@ function migrateV22toV23(appData: MigrationAppData): void {
   }));
   delete appData.profiles;
 
-  appData.currentAppConfig = moveLastUsedSerialPortIntoPortSettings(appData.currentAppConfig);
+  // `currentAppConfig` is always present at this version; the optional type
+  // only exists because v25 replaces it with `sessions`.
+  if (appData.currentAppConfig !== undefined) {
+    appData.currentAppConfig = moveLastUsedSerialPortIntoPortSettings(appData.currentAppConfig);
+  }
 
   appData.version = 23;
 }
@@ -800,6 +825,15 @@ function migrateV24toV25(appData: MigrationAppData): void {
       delete rootConfig.terminal.rightDrawer.version;
     }
   });
+
+  // Multiple sessions. The one config the app had becomes the first (and
+  // only) session; from here on there is a list of them and an active one.
+  if (appData.currentAppConfig !== undefined) {
+    const id = newSessionId();
+    appData.sessions = [{ id, name: 'Session 1', config: appData.currentAppConfig }];
+    appData.activeSessionId = id;
+    delete appData.currentAppConfig;
+  }
 
   appData.version = 25;
 }

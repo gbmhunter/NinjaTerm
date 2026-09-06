@@ -4,7 +4,6 @@ import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal } from './SingleTerminal';
 import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import { FilterController } from 'src/model/Terminals/Filters/FilterController';
@@ -16,11 +15,11 @@ describe('find-in-scrollback', () => {
   beforeEach(() => {
     window.localStorage.clear();
     const app = new App();
-    const profileManager = new AppDataManager(app);
-    const rxSettings = new RxSettings(profileManager);
-    const displaySettings = new DisplaySettings(profileManager);
+    const session = app.activeSession;
+    const rxSettings = new RxSettings(session);
+    const displaySettings = new DisplaySettings(session);
     const snackbar = new SnackbarController();
-    filterController = new FilterController(profileManager);
+    filterController = new FilterController(session);
     terminal = new SingleTerminal('test-find', true, rxSettings, displaySettings, snackbar, null, null, null, filterController);
     terminal.setTerminalViewHeightPx(100);
   });

@@ -11,7 +11,7 @@ import RxSettings, {
   TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import { Session } from 'src/model/Session/Session';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
@@ -19,7 +19,7 @@ import { FilterController } from 'src/model/Terminals/Filters/FilterController';
 
 describe('single terminal tests', () => {
   let app: App;
-  let profileManager: AppDataManager;
+  let session: Session;
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
   let snackbarController: SnackbarController;
@@ -30,11 +30,11 @@ describe('single terminal tests', () => {
     // a clean slate (so settings will go to their defaults). Clear local storage before each test.
     window.localStorage.clear();
     app = new App();
-    profileManager = new AppDataManager(app);
-    dataProcessingSettings = new RxSettings(profileManager);
-    displaySettings = new DisplaySettings(profileManager);
+    session = app.activeSession;
+    dataProcessingSettings = new RxSettings(session);
+    displaySettings = new DisplaySettings(session);
     snackbarController = new SnackbarController();
-    filterController = new FilterController(profileManager);
+    filterController = new FilterController(session);
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import { TerminalFilterData } from 'src/model/AppDataManager/DataClasses/TerminalFilterData';
 import { TerminalFilter } from './TerminalFilter';
 
@@ -11,21 +11,21 @@ import { TerminalFilter } from './TerminalFilter';
  * the same filter list applies to both — see `Terminals`.
  *
  * Mirrors `RulesSettings`' shape — filters are persisted as POD objects in
- * `appData.currentAppConfig.terminal.filters`, and the runtime objects are
+ * the session config's `terminal.filters`, and the runtime objects are
  * recreated on every profile load.
  */
 export class FilterController {
-  profileManager: AppDataManager;
+  session: Session;
 
   filters: TerminalFilter[] = [];
 
-  constructor(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
+  constructor(session: Session) {
+    this.session = session;
     this._loadConfig();
-    this.profileManager.registerOnConfigReload(['terminal.filters'], () => {
+    this.session.registerOnConfigReload(['terminal.filters'], () => {
       this._loadConfig();
     });
-    makeAutoObservable(this);
+    makeAutoObservable(this, { session: false });
   }
 
   /** Filters that currently affect the view (enabled, non-empty, and valid). */
@@ -48,13 +48,13 @@ export class FilterController {
   };
 
   _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.terminal;
+    const config = this.session.config.terminal;
     config.filters = this.filters.map((filter) => filter.toConfig());
-    this.profileManager.saveAppData();
+    this.session.saveAppData();
   };
 
   _loadConfig = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.terminal;
+    const configToLoad = this.session.config.terminal;
     this.filters = configToLoad.filters.map((filterCfg) => {
       const filter = new TerminalFilter(this._saveConfig);
       filter.loadConfig(filterCfg);

@@ -1,10 +1,20 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { ZodType } from 'zod';
 
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { ProfileConfig } from 'src/model/AppDataManager/DataClasses/ProfileConfig';
 import { ConfigBranch } from 'src/model/Presets/PresetScope';
 import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+
+/**
+ * What a `SettingsBranch` needs from its owner: the config tree it lives in,
+ * to be told when part of that tree was reloaded, and a way to persist.
+ * `Session` implements it; tests may pass a plain object.
+ */
+export interface ConfigHost {
+  readonly config: ProfileConfig;
+  registerOnConfigReload(branches: ConfigBranch[], callback: () => void): void;
+  saveAppData(): void;
+}
 
 /** The keys of `T` whose value type is assignable to `V`. */
 type KeysOfType<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T];
@@ -52,7 +62,7 @@ type KeysOfType<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T
  *   maxEscapeCodeLengthChars = this.branch.applyableNumber('maxEscapeCodeLengthChars', z.coerce.number().min(2));
  *
  * as a one-line field with its validation right there, and call
- * `this.branch.attach(profileManager)` in the constructor body.
+ * `this.branch.attach(session)` in the constructor body.
  */
 export class SettingsBranch<TData extends object> {
   /**
@@ -67,7 +77,7 @@ export class SettingsBranch<TData extends object> {
    */
   data!: TData;
 
-  private profileManager!: AppDataManager;
+  private host!: ConfigHost;
 
   private readonly branchName: ConfigBranch;
 
@@ -93,10 +103,10 @@ export class SettingsBranch<TData extends object> {
    * called once, from the owning settings class's constructor, before any
    * `applyable*` call.
    */
-  attach(profileManager: AppDataManager) {
-    this.profileManager = profileManager;
-    this.data = this.select(profileManager.appData.currentAppConfig);
-    profileManager.registerOnConfigReload([this.branchName], () => this.onReload());
+  attach(host: ConfigHost) {
+    this.host = host;
+    this.data = this.select(host.config);
+    host.registerOnConfigReload([this.branchName], () => this.onReload());
     // Applyable fields declared as field initialisers were built before `data`
     // existed; give them their real values now.
     for (const reseed of this.reseeders) {
@@ -105,12 +115,12 @@ export class SettingsBranch<TData extends object> {
   }
 
   private get isAttached(): boolean {
-    return this.profileManager !== undefined;
+    return this.host !== undefined;
   }
 
   /** Persists the whole app data. Call after writing to `data` directly. */
   save() {
-    this.profileManager.saveAppData();
+    this.host.saveAppData();
   }
 
   /** Writes one field and persists. For setters that then do something else. */
@@ -187,7 +197,7 @@ export class SettingsBranch<TData extends object> {
    * getters read through `data`.
    */
   private onReload() {
-    this.data = this.select(this.profileManager.appData.currentAppConfig);
+    this.data = this.select(this.host.config);
     for (const reseed of this.reseeders) {
       reseed();
     }

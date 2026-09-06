@@ -49,9 +49,9 @@ describe('settings façade', () => {
   test('a setter writes the persisted object and localStorage — there is no second copy', () => {
     app.settings.rxSettings.setDataType(DataType.NUMBER);
 
-    expect(app.profileManager.appData.currentAppConfig.settings.rxSettings.dataType).toBe(DataType.NUMBER);
+    expect(app.activeSession.config.settings.rxSettings.dataType).toBe(DataType.NUMBER);
     const stored = JSON.parse(window.localStorage.getItem('appData')!);
-    expect(stored.currentAppConfig.settings.rxSettings.dataType).toBe(DataType.NUMBER);
+    expect(stored.sessions[0].config.settings.rxSettings.dataType).toBe(DataType.NUMBER);
   });
 
   test('defaults come from the data class alone', () => {
@@ -117,7 +117,7 @@ describe('settings façade', () => {
     // ...and so must the setter: a write now has to land in the object that
     // is actually in the tree, not the one that was there before the undo.
     rx.setCharacterEncoding(CharacterEncoding.UTF8);
-    expect(app.profileManager.appData.currentAppConfig.settings.rxSettings.characterEncoding).toBe(
+    expect(app.activeSession.config.settings.rxSettings.characterEncoding).toBe(
       CharacterEncoding.UTF8,
     );
   });
@@ -128,7 +128,7 @@ describe('settings façade', () => {
     port.baudRate.setDispValue('9600');
     port.baudRate.apply();
     expect(port.baudRate.appliedValue).toBe(9600);
-    expect(app.profileManager.appData.currentAppConfig.settings.portSettings.baudRate).toBe(9600);
+    expect(app.activeSession.config.settings.portSettings.baudRate).toBe(9600);
 
     // The old hand-rolled version only validated on apply; ApplyableField
     // validates as you type, like every other applyable in the app.
@@ -137,7 +137,7 @@ describe('settings façade', () => {
     expect(port.baudRate.errorMsg).not.toBe('');
     port.baudRate.apply();
     expect(port.baudRate.appliedValue).toBe(9600);
-    expect(app.profileManager.appData.currentAppConfig.settings.portSettings.baudRate).toBe(9600);
+    expect(app.activeSession.config.settings.portSettings.baudRate).toBe(9600);
   });
 
   test('a settings class constructed against a second manager sees the persisted values', () => {
@@ -150,7 +150,7 @@ describe('settings façade', () => {
 
   test('Graphing stores its numeric applyables as numbers and re-validates max against min', () => {
     const graphing = app.graphing;
-    const persisted = () => app.profileManager.appData.currentAppConfig.settings.graphingSettings;
+    const persisted = () => app.activeSession.config.settings.graphingSettings;
 
     graphing.maxBufferSize.setDispValue('2000');
     graphing.maxBufferSize.apply();
@@ -194,8 +194,8 @@ describe('settings façade', () => {
     logging.setLogRawTxData(true);
     logging.setWhatToNameTheFile(WhatToNameTheFile.CUSTOM);
     const stored = JSON.parse(window.localStorage.getItem('appData')!);
-    expect(stored.currentAppConfig.settings.logSettings.logRawTxData).toBe(true);
-    expect(stored.currentAppConfig.settings.logSettings.whatToNameTheFile).toBe(WhatToNameTheFile.CUSTOM);
+    expect(stored.sessions[0].config.settings.logSettings.logRawTxData).toBe(true);
+    expect(stored.sessions[0].config.settings.logSettings.whatToNameTheFile).toBe(WhatToNameTheFile.CUSTOM);
 
     logging.customFileName.setDispValue('preset.log');
     logging.customFileName.apply();
@@ -211,7 +211,7 @@ describe('settings façade', () => {
 
   test('Terminals.showRightDrawer and RightDrawer share the one persisted branch', () => {
     const terminals = app.terminals;
-    const persisted = () => app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    const persisted = () => app.activeSession.config.terminal.rightDrawer;
 
     terminals.setShowRightDrawer(false);
     expect(terminals.rightDrawer.showRightDrawer).toBe(false);

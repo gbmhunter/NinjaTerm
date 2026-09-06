@@ -146,6 +146,13 @@ function SettingsDialog(props: Props) {
               marginRight: '16px',
             }}
           >
+            {/* Settings are per session; say which one these are. */}
+            <div
+              data-testid="settings-session-name"
+              style={{ padding: '6px 12px 2px', fontSize: '0.75rem', color: '#9e9e9e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              Session: <span style={{ color: '#e0e0e0' }}>{app.activeSession.name}</span>
+            </div>
             <nav aria-label="main">
               <List sx={{ paddingTop: 0 }}>
                 {groups.map((group, groupIdx) => (

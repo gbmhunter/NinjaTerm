@@ -1,4 +1,4 @@
-import { App } from '../../App';
+import type { Session } from '../../Session/Session';
 import { BluetoothLEController } from '../BluetoothLEController';
 import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
@@ -27,7 +27,7 @@ export class BleTransport implements Transport {
 
   private controller: BluetoothLEController;
 
-  constructor(_app: App, controller: BluetoothLEController) {
+  constructor(_session: Session, controller: BluetoothLEController) {
     this.controller = controller;
   }
 

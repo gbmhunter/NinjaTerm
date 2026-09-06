@@ -8,7 +8,7 @@ import { AppData, LATEST_VERSION } from './DataClasses/AppData';
 import { StoredPreset } from './DataClasses/StoredPreset';
 import { migrateAppData } from './appDataMigrations';
 import { log } from '@/model/Util/Log';
-import { ConfigBranch, ALL_PRESET_CATEGORIES, PresetCategory, capturePatch } from '@/model/Presets/PresetScope';
+import { ALL_PRESET_CATEGORIES, PresetCategory, capturePatch } from '@/model/Presets/PresetScope';
 
 /**
  * Alias to the up-to-date version of the app data class.
@@ -21,14 +21,6 @@ export class AppDataManager {
   app: App;
 
   appData: AppData;
-
-  _configReloadCallbacks: { branches: ConfigBranch[]; callback: () => void }[] = [];
-
-  /**
-   * Represents the name of the last profile that was applied to the app. Used for displaying
-   * in various places such as the toolbar.
-   */
-  lastAppliedPresetName: string = 'No preset';
 
   constructor(app: App) {
     this.app = app;
@@ -91,42 +83,6 @@ export class AppDataManager {
       }
     }
   }
-
-  /**
-   * Ask to be told when the config is reloaded.
-   *
-   * @param branches The config branches this callback cares about. It is only
-   *    invoked when one of them is among those that changed, so a preset that
-   *    only touches RX settings doesn't make the rules pane rebuild its list and
-   *    close its edit modal, or make the logger do an IPC round-trip.
-   * @param callback For the flat settings classes this is `SettingsBranch`'s
-   *    reload handler (re-resolve the branch object, re-seed applyable
-   *    fields); for collection-shaped state such as rules, macros and filters it
-   *    is still a hand-written `_loadConfig`.
-   */
-  registerOnConfigReload = (branches: ConfigBranch[], callback: () => void) => {
-    this._configReloadCallbacks.push({ branches, callback });
-  };
-
-  /**
-   * Tell every registered part of the app to re-read `currentAppConfig`.
-   *
-   * Called after the config tree is replaced wholesale (loading a profile, or
-   * undoing a preset) or patched in place (applying a preset). Plain settings
-   * fields need nothing here — they read through to the tree — but each
-   * `SettingsBranch` re-resolves its branch object (undo swaps it) and re-seeds
-   * the display strings of its applyable fields, and the collection-shaped
-   * controllers re-read their slice.
-   */
-  notifyConfigReloaded = (changedBranches?: ConfigBranch[]) => {
-    for (const { branches, callback } of this._configReloadCallbacks) {
-      // Undefined means "everything changed", which is what a wholesale config
-      // replacement does.
-      if (changedBranches === undefined || branches.some((b) => changedBranches.includes(b))) {
-        callback();
-      }
-    }
-  };
 
   _loadAppDataFromStorage = () => {
     const appDataAsJson = window.localStorage.getItem(APP_DATA_STORAGE_KEY);
@@ -219,14 +175,14 @@ export class AppDataManager {
   };
 
   /**
-   * Create a preset capturing the current app state, and add it to the list.
+   * Create a preset capturing the active session's state, and add it to the list.
    *
    * @param name What to call it.
    * @param scope Which categories it covers. Defaults to everything, which is
    *    what a profile always was.
    */
   newPreset = (name: string, scope: PresetCategory[] = ALL_PRESET_CATEGORIES) => {
-    const preset = new StoredPreset(name, scope, capturePatch(this.appData.currentAppConfig, scope));
+    const preset = new StoredPreset(name, scope, capturePatch(this.app.activeSession.config, scope));
     this.appData.presets.push(preset);
     this.saveAppData();
     return this.appData.presets.length - 1;
@@ -255,7 +211,7 @@ export class AppDataManager {
   };
 
   /**
-   * Re-capture the current app state into an existing preset, keeping its scope.
+   * Re-capture the active session's state into an existing preset, keeping its scope.
    *
    * @param presetIdx The index of the preset to overwrite.
    * @param scope Optionally change what it covers at the same time.
@@ -265,12 +221,12 @@ export class AppDataManager {
     if (scope !== undefined) {
       preset.scope = [...scope];
     }
-    preset.config = capturePatch(this.appData.currentAppConfig, preset.scope);
+    preset.config = capturePatch(this.app.activeSession.config, preset.scope);
     this.saveAppData();
 
-    // Saving the current state into a preset leaves the app matching that
+    // Saving the current state into a preset leaves the session matching that
     // preset, same as applying it, so the window title follows.
-    this.lastAppliedPresetName = preset.name;
+    this.app.activeSession.lastAppliedPresetName = preset.name;
 
     if (!noSnackbar) {
       this.app.snackbar.sendToSnackbar(`Preset "${preset.name}" saved.`, 'success');
@@ -278,13 +234,13 @@ export class AppDataManager {
   };
 
   /**
-   * Apply the stored preset at the provided index.
+   * Apply the stored preset at the provided index to the active session.
    *
    * @param presetIdx The index of the preset to apply.
    */
   applyStoredPreset = async (presetIdx: number) => {
     const stored = this.appData.presets[presetIdx];
-    await this.app.presetController.applyPreset({
+    await this.app.activeSession.presetController.applyPreset({
       id: `user-${presetIdx}`,
       name: stored.name,
       description: '',

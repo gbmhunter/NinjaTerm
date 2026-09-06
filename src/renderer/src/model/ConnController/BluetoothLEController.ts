@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
-import { App } from '@/model/App';
+import type { Session } from '@/model/Session/Session';
 import { SerializableBluetoothDevice, SerializableService, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
 import { log } from '@/model/Util/Log';
@@ -123,7 +123,7 @@ export const bluetoothLESerialProtocols = [
  * Controller for Bluetooth LE (BLE) operations.
  */
 export class BluetoothLEController {
-  private app: App;
+  private session: Session;
 
   discoveredBluetoothDevices: SerializableBluetoothDeviceWithMetadata[] = [];
 
@@ -190,9 +190,9 @@ export class BluetoothLEController {
    */
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  constructor(app: App) {
+  constructor(session: Session) {
     log.info('BluetoothLEController constructor called.');
-    this.app = app;
+    this.session = session;
 
     // Reset the main process Bluetooth state, in case the renderer was reloaded but the main process was not
     window.electronAPI.bluetooth.resetBluetoothState();
@@ -212,7 +212,7 @@ export class BluetoothLEController {
 
     // Listen for RX data. We should get any data until a device is connected.
     window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
-      this.app.parseRxData(data);
+      this.session.parseRxData(data);
     });
 
     this.validateAndApplyScanDurationMs();
@@ -296,11 +296,11 @@ export class BluetoothLEController {
 
     const result = await window.electronAPI.bluetooth.startPeripheralScan();
     if (!result.success) {
-      this.app.snackbar.sendToSnackbar(`Failed to start Bluetooth scan. Error: ${result.error}.`, 'error');
+      this.session.snackbar.sendToSnackbar(`Failed to start Bluetooth scan. Error: ${result.error}.`, 'error');
       return;
     }
 
-    this.app.snackbar.sendToSnackbar('Bluetooth scan started...', 'info');
+    this.session.snackbar.sendToSnackbar('Bluetooth scan started...', 'info');
     runInAction(() => {
       this.isBluetoothScanning = true;
     });
@@ -316,11 +316,11 @@ export class BluetoothLEController {
   stopBluetoothScan = async () => {
     const result = await window.electronAPI.bluetooth.stopPeripheralScan();
     if (!result.success) {
-      this.app.snackbar.sendToSnackbar(`Failed to stop Bluetooth scan. Error: ${result.error}.`, 'error');
+      this.session.snackbar.sendToSnackbar(`Failed to stop Bluetooth scan. Error: ${result.error}.`, 'error');
       return;
     }
 
-    this.app.snackbar.sendToSnackbar('Bluetooth scan finished.', 'success');
+    this.session.snackbar.sendToSnackbar('Bluetooth scan finished.', 'success');
 
     runInAction(() => {
       this.isBluetoothScanning = false;
@@ -435,7 +435,7 @@ export class BluetoothLEController {
   connect = async (): Promise<{ success: boolean; error?: string }> => {
     log.info('connect() called.');
     if (!this.selectedBluetoothDevice) {
-      this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
+      this.session.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
       return { success: false, error: 'No Bluetooth device selected' };
     }
 
@@ -449,8 +449,8 @@ export class BluetoothLEController {
     // Starting the connection can fail if we are already connecting to a device.
     if (result.error) {
       // Don't show error if we are already trying to reconnect as errors are to be expected here.
-      if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.snackbar.sendToSnackbar(`Failed to start connection attempt to Bluetooth device. Error: ${result.error}.`, 'error');
+      if (this.session.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+        this.session.snackbar.sendToSnackbar(`Failed to start connection attempt to Bluetooth device. Error: ${result.error}.`, 'error');
       }
       this.connectionAttemptResolver = null;
       return { success: false, error: result.error };
@@ -471,8 +471,8 @@ export class BluetoothLEController {
     log.info('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
     if (error) {
       // Don't show error if we are already trying to reconnect as errors are to be expected here.
-      if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
+      if (this.session.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+        this.session.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
       }
       // Resolve the connection promise with failure
       if (this.connectionAttemptResolver) {
@@ -483,7 +483,7 @@ export class BluetoothLEController {
     }
 
     if (this.selectedBluetoothDevice === null) {
-      this.app.snackbar.sendToSnackbar('No Bluetooth device selected (this.selectedBluetoothDevice is null) even though the connection attempt was successful.', 'error');
+      this.session.snackbar.sendToSnackbar('No Bluetooth device selected (this.selectedBluetoothDevice is null) even though the connection attempt was successful.', 'error');
       // Resolve the connection promise with failure
       if (this.connectionAttemptResolver) {
         this.connectionAttemptResolver({ success: false, error: 'No Bluetooth device selected' });
@@ -493,7 +493,7 @@ export class BluetoothLEController {
     }
 
     if (bluetoothConnectionAttemptSuccess === null) {
-      this.app.snackbar.sendToSnackbar('Bluetooth connection success message was not returned from the main process.', 'error');
+      this.session.snackbar.sendToSnackbar('Bluetooth connection success message was not returned from the main process.', 'error');
       // Resolve the connection promise with failure
       if (this.connectionAttemptResolver) {
         this.connectionAttemptResolver({ success: false, error: 'Connection success message was not returned' });
@@ -504,7 +504,7 @@ export class BluetoothLEController {
 
     // Look for valid services/characteristics in the returned information
     if(!bluetoothConnectionAttemptSuccess.services) {
-      this.app.snackbar.sendToSnackbar('Services information was not returned from the main process.', 'error');
+      this.session.snackbar.sendToSnackbar('Services information was not returned from the main process.', 'error');
       // Resolve the connection promise with failure
       if (this.connectionAttemptResolver) {
         this.connectionAttemptResolver({ success: false, error: 'Services information was not returned' });
@@ -519,7 +519,7 @@ export class BluetoothLEController {
     if (this.selectedSerialProtocol === BluetoothLESerialProtocolType.MANUALLY_SPECIFY) {
       // Validate that manual UUIDs are provided
       if (!this.manualServiceUuid || !this.manualRxCharacteristicUuid || !this.manualTxCharacteristicUuid) {
-        this.app.snackbar.sendToSnackbar('Manual UUIDs not specified. Please enter Service, RX, and TX UUIDs.', 'error');
+        this.session.snackbar.sendToSnackbar('Manual UUIDs not specified. Please enter Service, RX, and TX UUIDs.', 'error');
         window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
         // Resolve the connection promise with failure
         if (this.connectionAttemptResolver) {
@@ -589,7 +589,7 @@ export class BluetoothLEController {
     }
 
     if (!foundProtocol) {
-      this.app.snackbar.sendToSnackbar('Correct service and characteristic UUIDs were not found on connected Bluetooth device.', 'error');
+      this.session.snackbar.sendToSnackbar('Correct service and characteristic UUIDs were not found on connected Bluetooth device.', 'error');
       // We need to tell the main process to disconnect from the device
       window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
       // Resolve the connection promise with failure
@@ -606,7 +606,7 @@ export class BluetoothLEController {
       foundProtocol.rxUuid,
       foundProtocol.txUuid);
     if (!setupReadAndWriteResult.success) {
-      this.app.snackbar.sendToSnackbar(`Failed to setup read and write on connected Bluetooth device. Error: ${setupReadAndWriteResult.error}.`, 'error');
+      this.session.snackbar.sendToSnackbar(`Failed to setup read and write on connected Bluetooth device. Error: ${setupReadAndWriteResult.error}.`, 'error');
       // We need to tell the main process to disconnect from the device
       window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
       // Resolve the connection promise with failure
@@ -619,12 +619,12 @@ export class BluetoothLEController {
 
     // If we get here, we have connected to the device and have found valid services and characteristics for the selected serial protocol
     // We can consider our connection attempt successful
-    this.app.snackbar.sendToSnackbar(
+    this.session.snackbar.sendToSnackbar(
       `Bluetooth device connected: ${this.selectedBluetoothDevice.nobleData.advertisement.localName} (${this.selectedBluetoothDevice.nobleData.id}).`,
       'success');
     runInAction(() => {
       this.connectedBluetoothDevice = this.selectedBluetoothDevice;
-      this.app.connController.connState = ConnState.OPENED;
+      this.session.connController.connState = ConnState.OPENED;
       this.stopPollingForReconnection();
     });
 
@@ -658,7 +658,7 @@ export class BluetoothLEController {
     this.weInitiatedDisconnection = true;
     const result = await window.electronAPI.bluetooth.disconnectDevice(this.connectedBluetoothDevice.nobleData.id);
     if (!result.success) {
-      this.app.snackbar.sendToSnackbar(`Failed to disconnect from Bluetooth device. Error: ${result.error}.`, 'error');
+      this.session.snackbar.sendToSnackbar(`Failed to disconnect from Bluetooth device. Error: ${result.error}.`, 'error');
       return;
     }
   }
@@ -676,13 +676,13 @@ export class BluetoothLEController {
     // If we get here, it means we did not initiate the disconnection
     let portState = ConnState.CLOSED;
     if (this.weInitiatedDisconnection) {
-      this.app.snackbar.sendToSnackbar(
+      this.session.snackbar.sendToSnackbar(
         `Bluetooth device disconnected: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
         'success');
       portState = ConnState.CLOSED;
     } else {
       // Bluetooth device disconnected unexpectedly!
-      this.app.snackbar.sendToSnackbar(
+      this.session.snackbar.sendToSnackbar(
         `Bluetooth device disconnected unexpectedly: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
         'error');
       portState = ConnState.CLOSED_BUT_WILL_REOPEN
@@ -696,7 +696,7 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = null;
       this.connectedDeviceServices = [];
-      this.app.connController.connState = portState;
+      this.session.connController.connState = portState;
     });
 
     // We don't need to remove the listener here as it is only added once in the constructor, not on every device connection.
@@ -710,7 +710,7 @@ export class BluetoothLEController {
    */
   sendData = (data: Uint8Array) => {
     if (!this.connectedBluetoothDevice) {
-      this.app.snackbar.sendToSnackbar('No Bluetooth device connected. Cannot send data.', 'error');
+      this.session.snackbar.sendToSnackbar('No Bluetooth device connected. Cannot send data.', 'error');
       return;
     }
     window.electronAPI.bluetooth.writeData(data);

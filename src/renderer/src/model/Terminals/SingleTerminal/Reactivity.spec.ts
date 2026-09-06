@@ -5,7 +5,6 @@ import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal } from './SingleTerminal';
 import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
@@ -32,11 +31,11 @@ describe('SingleTerminal reactivity', () => {
   beforeEach(() => {
     window.localStorage.clear();
     const app = new App();
-    const profileManager = new AppDataManager(app);
-    const rxSettings = new RxSettings(profileManager);
-    const displaySettings = new DisplaySettings(profileManager);
+    const session = app.activeSession;
+    const rxSettings = new RxSettings(session);
+    const displaySettings = new DisplaySettings(session);
     const snackbar = new SnackbarController();
-    rulesSettings = new RulesSettings(profileManager);
+    rulesSettings = new RulesSettings(session);
     rulesSettings.rules.splice(0);
 
     terminal = new SingleTerminal(

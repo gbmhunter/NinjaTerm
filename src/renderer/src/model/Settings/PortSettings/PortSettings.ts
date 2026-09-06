@@ -1,8 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import { App } from 'src/model/App';
+import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { Session } from 'src/model/Session/Session';
 import { ConnController } from '@/model/ConnController/ConnController';
 import type { PortSettingsData } from 'src/model/AppDataManager/DataClasses/PortSettingsData';
 import { SettingsBranch } from '../SettingsBranch';
@@ -66,8 +66,12 @@ export enum RttInterface {
 
 export class PortSettings {
 
-  app: App
-  profileManager: AppDataManager;
+  session: Session;
+
+  /** App-wide data (presets, MCP flags). Reached through the session. */
+  get profileManager(): AppDataManager {
+    return this.session.app.profileManager;
+  }
 
   /** See `SettingsBranch` for how this class relates to `PortSettingsData`. */
   private readonly branch = new SettingsBranch<PortSettingsData>(
@@ -261,11 +265,10 @@ export class PortSettings {
     this.branch.set('rttRecentDevices', [trimmed, ...without].slice(0, PortSettings.RTT_RECENT_DEVICES_MAX));
   }
 
-  constructor(app: App) {
-    this.app = app;
-    this.profileManager = app.profileManager;
-    this.branch.attach(this.profileManager);
-    makeAutoObservable<PortSettings, 'branch'>(this, { branch: false });
+  constructor(session: Session) {
+    this.session = session;
+    this.branch.attach(session);
+    makeAutoObservable<PortSettings, 'branch'>(this, { branch: false, session: false });
   }
 
   scanForSerialPorts = async () => {
@@ -275,7 +278,7 @@ export class PortSettings {
         this.availableSerialPorts = ConnController.sortSerialPortsNaturally(result.ports!);
       } else {
         this.availableSerialPorts = [];
-        this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
+        this.session.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
       }
     });
   }
@@ -296,7 +299,7 @@ export class PortSettings {
     if (this.connectionType === ConnectionType.SOCKET) {
       return `${this.socketHost}:${this.socketPort}`;
     } else if (this.connectionType === ConnectionType.BLUETOOTH_LE) {
-      const connectedBluetoothDevice = this.app.connController.bluetoothLEController.connectedBluetoothDevice;
+      const connectedBluetoothDevice = this.session.connController.bluetoothLEController.connectedBluetoothDevice;
       if (connectedBluetoothDevice === null) {
         return 'n/a';
       }
@@ -325,10 +328,10 @@ export class PortSettings {
    * Will close the port and reopen, if port is in the open state.
    */
   _reconnectIfNeeded = async () => {
-    if (this.app.connController.connState === ConnState.OPENED) {
-      await this.app.connController.closeConnection({ silenceSnackbar: true});
-      await this.app.connController.openConnection({ silenceSnackbar: true});
-      this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
+    if (this.session.connController.connState === ConnState.OPENED) {
+      await this.session.connController.closeConnection({ silenceSnackbar: true});
+      await this.session.connController.openConnection({ silenceSnackbar: true});
+      this.session.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }
   }
 }

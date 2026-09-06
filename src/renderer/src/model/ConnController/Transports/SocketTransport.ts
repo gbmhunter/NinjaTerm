@@ -1,4 +1,4 @@
-import { App } from '../../App';
+import type { Session } from '../../Session/Session';
 import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
@@ -17,7 +17,7 @@ export class SocketTransport implements Transport {
   readonly selfManagesReconnection = false;
   readonly selfManagesState = false;
 
-  private app: App;
+  private session: Session;
 
   /** Id of the live connection, or null. Also filters incoming events. */
   private connectionId: string | null = null;
@@ -33,12 +33,12 @@ export class SocketTransport implements Transport {
 
   private disposers: Array<() => void> = [];
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
   }
 
   validate(): string | null {
-    const { socketHost, socketPort } = this.app.settings.portConfiguration;
+    const { socketHost, socketPort } = this.session.settings.portConfiguration;
     if (!socketHost || socketPort <= 0 || socketPort > 65535) {
       return 'Invalid socket host or port. Please check the Connection Configuration.';
     }
@@ -49,8 +49,8 @@ export class SocketTransport implements Transport {
     // On a reconnect, prefer the endpoint we were connected to; on a first
     // open there is nothing captured yet, so read the settings.
     const target = this.connectedTo ?? {
-      host: this.app.settings.portConfiguration.socketHost,
-      port: this.app.settings.portConfiguration.socketPort,
+      host: this.session.settings.portConfiguration.socketHost,
+      port: this.session.settings.portConfiguration.socketPort,
     };
 
     try {

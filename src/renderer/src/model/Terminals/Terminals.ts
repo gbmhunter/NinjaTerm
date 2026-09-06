@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed } from 'mobx';
 
-import { App } from 'src/model/App';
+import type { Session } from 'src/model/Session/Session';
 import { SingleTerminal } from './SingleTerminal/SingleTerminal';
 import { FilterController } from './Filters/FilterController';
 import RightDrawer from './RightDrawer/RightDrawer';
@@ -8,7 +8,7 @@ import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/Displa
 
 export default class Terminals {
 
-  app: App;
+  session: Session;
 
   txRxTerminal: SingleTerminal;
 
@@ -25,17 +25,21 @@ export default class Terminals {
 
   rightDrawer: RightDrawer;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
 
-    this.filterController = new FilterController(app.profileManager);
+    this.filterController = new FilterController(session);
 
-    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer, this.filterController);
-    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer, this.filterController);
-    this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
-    this.rightDrawer = new RightDrawer(app);
+    const { rxSettings, displaySettings, rulesSettings } = session.settings;
+    const { snackbar, soundPlayer } = session.app;
+
+    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, rxSettings, displaySettings, snackbar, session.handleTerminalKeyDown, rulesSettings, soundPlayer, this.filterController);
+    this.rxTerminal = new SingleTerminal('rx-terminal', false, rxSettings, displaySettings, snackbar, session.handleTerminalKeyDown, rulesSettings, soundPlayer, this.filterController);
+    this.txTerminal = new SingleTerminal('tx-terminal', true, rxSettings, displaySettings, snackbar, session.handleTerminalKeyDown, rulesSettings, soundPlayer);
+    this.rightDrawer = new RightDrawer(session);
 
     makeAutoObservable(this, {
+      session: false,
       activeTerminal: computed,
     }); // Make sure this near the end
   }
@@ -48,7 +52,7 @@ export default class Terminals {
    * current `dataViewConfiguration`.
    */
   get activeTerminal(): SingleTerminal {
-    if (this.app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+    if (this.session.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
       return this.txTerminal;
     }
     return this.txRxTerminal;

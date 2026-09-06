@@ -1,4 +1,4 @@
-import { App } from '../../App';
+import type { Session } from '../../Session/Session';
 import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
@@ -19,10 +19,10 @@ export class FakeTransport implements Transport {
   /** Never reconnects — a fake port cannot go away unexpectedly. */
   readonly reconnectIntervalMs = 0;
 
-  private app: App;
+  private session: Session;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
   }
 
   validate(): string | null {
@@ -32,12 +32,12 @@ export class FakeTransport implements Transport {
   async open(_callbacks: TransportCallbacks): Promise<OpenOutcome> {
     // The fake port controller pushes generated data straight into
     // `App.parseRxData`, so there are no listeners to register here.
-    this.app.fakePortController.openPort();
+    this.session.fakePortController.openPort();
     return { success: true };
   }
 
   async close(): Promise<void> {
-    this.app.fakePortController.closePort();
+    this.session.fakePortController.closePort();
   }
 
   async write(_bytes: Uint8Array): Promise<void> {

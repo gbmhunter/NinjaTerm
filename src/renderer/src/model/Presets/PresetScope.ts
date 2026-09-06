@@ -283,7 +283,7 @@ function deleteAtPath(root: unknown, path: string): void {
  * Snapshots the branches a scope covers out of a config, dropping anything
  * specific to this machine.
  *
- * @param config The config to capture from, normally `currentAppConfig`.
+ * @param config The config to capture from, normally the active session's.
  * @param scope The categories the user ticked.
  */
 export function capturePatch(config: ProfileConfig, scope: PresetCategory[]): ConfigPatch {

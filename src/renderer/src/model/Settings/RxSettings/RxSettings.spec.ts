@@ -80,7 +80,7 @@ describe('RX settings persistence', () => {
 
     return app.profileManager.applyStoredPreset(savedProfileIdx).then(() => {
       expect(
-        JSON.stringify(app.profileManager.appData.currentAppConfig.settings.rxSettings),
+        JSON.stringify(app.activeSession.config.settings.rxSettings),
       ).toBe(savedRxConfig);
     });
   });

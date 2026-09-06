@@ -192,7 +192,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     removeAllListeners: () => {
       ipcRenderer.removeAllListeners('mcp:request');
     },
-    pushRxData: (text: string) => ipcRenderer.send('mcp:rx-data', text),
+    pushRxData: (sessionId: string, text: string) => ipcRenderer.send('mcp:rx-data', sessionId, text),
   },
 
   // Bluetooth operations
@@ -310,7 +310,7 @@ export interface ElectronAPI {
     onRequest(callback: (payload: { id: string; method: string; params: any }) => void): Disposer;
     respond(id: string, data: any, error?: string): Promise<void>;
     removeAllListeners(): void;
-    pushRxData(text: string): void;
+    pushRxData(sessionId: string, text: string): void;
   };
   bluetooth: {
     resetBluetoothState(): Promise<{ success: boolean; error?: string }>;

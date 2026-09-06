@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { App, MainPanes } from 'src/model/App';
+import type { Session } from 'src/model/Session/Session';
 import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import { CharacterEncoding, DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
@@ -32,7 +32,7 @@ class FakePort {
 }
 
 export default class FakePortsController {
-  app: App;
+  session: Session;
 
   isDialogOpen = false;
 
@@ -48,8 +48,8 @@ export default class FakePortsController {
    */
   searchText = '';
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(session: Session) {
+    this.session = session;
 
     //=================================================================================
     // silent (no data)
@@ -84,7 +84,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }, 10000);
           return intervalId;
         },
@@ -111,7 +111,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }, 1000);
           return intervalId;
         },
@@ -138,7 +138,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }, 200);
           return intervalId;
         },
@@ -165,7 +165,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }, 100);
           return intervalId;
         },
@@ -193,7 +193,7 @@ export default class FakePortsController {
               for (let i = 0; i < textToSend.length; i++) {
                 bytesToSend.push(textToSend.charCodeAt(i));
               }
-              app.parseRxData(Uint8Array.from(bytesToSend));
+              session.parseRxData(Uint8Array.from(bytesToSend));
             }
           }, 1000);
           return intervalId;
@@ -221,7 +221,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }
           return null;
         },
@@ -247,7 +247,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
 
             stringIdx += 1;
             if (stringIdx === strings.length) {
@@ -321,7 +321,7 @@ export default class FakePortsController {
             return pool[Math.floor(Math.random() * pool.length)] + '\n';
           };
           const intervalId = setInterval(() => {
-            app.parseRxData(new TextEncoder().encode(pickLine()));
+            session.parseRxData(new TextEncoder().encode(pickLine()));
           }, 700);
           return intervalId;
         },
@@ -349,7 +349,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
 
             stringIdx += 1;
             if (stringIdx === strings.length) {
@@ -453,7 +453,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
 
             stringIdx += 1;
             if (stringIdx === strings.length) {
@@ -487,7 +487,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
 
             sendIdx += 1;
             if (sendIdx === 51) {
@@ -526,7 +526,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
 
             sendIdx += 1;
             if (sendIdx === 51) {
@@ -562,7 +562,7 @@ export default class FakePortsController {
           for (let i = 0; i < textToSend.length; i++) {
             bytesToSend.push(textToSend.charCodeAt(i));
           }
-          app.parseRxData(Uint8Array.from(bytesToSend));
+          session.parseRxData(Uint8Array.from(bytesToSend));
 
           return null;
         },
@@ -583,13 +583,13 @@ export default class FakePortsController {
         'unsupported escape codes, ~0.7lps',
         'Sends a rotating set of CSI escape sequences that NinjaTerm does not support (erase line, DSR, show/hide cursor, save/restore cursor, italic/underline/inverse, 256-colour and true-colour SGR). Enables ANSI parsing and the RX "Show Unknown Escape Codes" setting so each unsupported sequence is surfaced inline as a highlighted marker.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
-          app.settings.rxSettings.setShowUnknownEscapeCodes(true);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
+          session.settings.rxSettings.setShowUnknownEscapeCodes(true);
           // The longest demo sequence (true-colour SGR) is 15 chars, which the
           // default limit covers, but pin it anyway so the demo still works if
           // the user has lowered their own limit.
-          app.settings.rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
-          app.settings.rxSettings.maxEscapeCodeLengthChars.apply();
+          session.settings.rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
+          session.settings.rxSettings.maxEscapeCodeLengthChars.apply();
 
           // Each line is a human-readable label followed by the raw, unsupported
           // escape sequence — the sequence itself is what gets surfaced.
@@ -610,7 +610,7 @@ export default class FakePortsController {
           let stringIdx = 0;
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx] + '\n';
-            app.parseRxData(new TextEncoder().encode(textToSend));
+            session.parseRxData(new TextEncoder().encode(textToSend));
             stringIdx += 1;
             if (stringIdx === strings.length) {
               stringIdx = 0;
@@ -635,21 +635,21 @@ export default class FakePortsController {
         'text-mode dashboard, 2 updates/s',
         'Draws a CP437 box-drawing framed dashboard once, then uses CUP (ESC[row;colH) to repaint just the value fields in place, twice a second. Enables ANSI parsing and CP437 decoding. Exercises absolute cursor positioning the way a full-screen DOS text-mode UI would. Pair with a DOS terminal font in Settings > Display for the authentic look.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
           // The frame is drawn with raw CP437 bytes, exactly as a DOS-style
           // device would send them, so the terminal has to be decoding CP437 for
           // them to come out as box-drawing characters rather than hex glyphs.
-          app.settings.rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
+          session.settings.rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
           // Timestamps are inserted as ordinary characters at the start of a
           // row, so they take up columns this demo doesn't know about and every
           // ESC[row;colH lands that far to the left, painting values into the
           // middle of the timestamp instead of into the frame.
-          app.settings.rxSettings.setAddTimestamps(false);
+          session.settings.rxSettings.setAddTimestamps(false);
 
           // Send raw bytes rather than TextEncoder-ing a string: every byte here
           // is one character on the wire, which is the whole point of CP437.
           const send = (bytes: number[]) => {
-            app.parseRxData(Uint8Array.from(bytes));
+            session.parseRxData(Uint8Array.from(bytes));
           };
           // ASCII text -> bytes, for the labels.
           const ascii = (text: string) => Array.from(text, (char) => char.charCodeAt(0));
@@ -722,7 +722,7 @@ export default class FakePortsController {
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
-            app.parseRxData(Uint8Array.from(bytesToSend));
+            session.parseRxData(Uint8Array.from(bytesToSend));
           }, 100);
           return intervalId;
         },
@@ -742,14 +742,14 @@ export default class FakePortsController {
         'alphabetic chars, 1 by 1, 5char/s',
         'Sends all alphabetic characters, one by one, at a rate of 5 characters per second.',
         () => {
-          app.settings.displaySettings.scrollbackBufferSizeRows.setDispValue('300');
-          app.settings.displaySettings.scrollbackBufferSizeRows.apply();
+          session.settings.displaySettings.scrollbackBufferSizeRows.setDispValue('300');
+          session.settings.displaySettings.scrollbackBufferSizeRows.apply();
           let testCharIdx = 65;
           const intervalId = setInterval(() => {
             const te = new TextEncoder();
             const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
             // const data = te.encode(String.fromCharCode(testCharIdx));
-            app.parseRxData(Uint8Array.from(data));
+            session.parseRxData(Uint8Array.from(data));
             testCharIdx += 1;
             if (testCharIdx === 90) {
               testCharIdx = 65;
@@ -788,7 +788,7 @@ export default class FakePortsController {
           }
           let idx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([bytes[idx]]));
+            session.parseRxData(Uint8Array.from([bytes[idx]]));
             idx += 1;
             if (idx === bytes.length) {
               idx = 0;
@@ -812,19 +812,19 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, 5chars/s, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.charSizePx.setDispValue('30');
-          app.settings.displaySettings.charSizePx.apply();
+          session.settings.displaySettings.charSizePx.setDispValue('30');
+          session.settings.displaySettings.charSizePx.apply();
 
-          app.settings.displaySettings.terminalWidthChars.setDispValue('40');
-          app.settings.displaySettings.terminalWidthChars.apply();
+          session.settings.displaySettings.terminalWidthChars.setDispValue('40');
+          session.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
-          app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
+          session.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([testCharIdx]));
+            session.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -848,22 +848,22 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, all at once, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, all at once. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.charSizePx.setDispValue('30');
-          app.settings.displaySettings.charSizePx.apply();
+          session.settings.displaySettings.charSizePx.setDispValue('30');
+          session.settings.displaySettings.charSizePx.apply();
 
-          app.settings.displaySettings.terminalWidthChars.setDispValue('40');
-          app.settings.displaySettings.terminalWidthChars.apply();
+          session.settings.displaySettings.terminalWidthChars.setDispValue('40');
+          session.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
-          app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
+          session.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           // Create all the bytes and send them immediately
           const data = new Uint8Array(256);
           for (let idx = 0; idx < 256; idx++) {
             data[idx] = idx;
           }
-          app.parseRxData(data);
+          session.parseRxData(data);
 
           // No timer needed
           return null;
@@ -884,11 +884,11 @@ export default class FakePortsController {
         'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode('x=2,y=10\n');
-            app.parseRxData(rxData);
+            session.parseRxData(rxData);
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -914,7 +914,7 @@ export default class FakePortsController {
         () => {
           // Disable ANSI escape code parsing for graph data, as it's likely not needed
           // and could interfere if the generated numbers accidentally form escape codes.
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
 
           let n = 0; // Iteration counter for sine wave progression
           const intervalMilliseconds = 200; // 5 points per second (1000ms / 200ms = 5)
@@ -935,7 +935,7 @@ export default class FakePortsController {
             // Format as "x=<data>,y=<data>\n"
             const textToSend = `x=${n},y=${noisyValue.toFixed(2)}\n`;
             const bytesToSend = new TextEncoder().encode(textToSend);
-            app.parseRxData(bytesToSend);
+            session.parseRxData(bytesToSend);
 
             n++; // Increment for the next point in the sine wave
           }, intervalMilliseconds);
@@ -1029,7 +1029,7 @@ export default class FakePortsController {
               outputString += prompt_mcuModules;
             }
 
-            app.parseRxData(new TextEncoder().encode(outputString));
+            session.parseRxData(new TextEncoder().encode(outputString));
 
             if (intervalId_mcuModules !== null) {
               clearInterval(intervalId_mcuModules);
@@ -1057,7 +1057,7 @@ export default class FakePortsController {
             finalClear += "\x1B[J";      // Clear from cursor to end of screen
           }
           finalClear += "\n"; // Add a newline for a clean state, regardless of whether clear was sent.
-          app.parseRxData(new TextEncoder().encode(finalClear));
+          session.parseRxData(new TextEncoder().encode(finalClear));
 
           // Reset flag for next connection. This is crucial.
           isFirstLogMessageEver = true;
@@ -1073,12 +1073,12 @@ export default class FakePortsController {
         'dataType: hex, bytes 0x00-0xFF, 5chars/s',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.HEX);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.HEX);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([testCharIdx]));
+            session.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -1103,12 +1103,12 @@ export default class FakePortsController {
         'dataType: uint8, bytes 0x00-0xFF, 5chars/s',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.UINT8);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.UINT8);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([testCharIdx]));
+            session.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -1133,12 +1133,12 @@ export default class FakePortsController {
         'dataType: uint16, numbers: 250-260, 5chars/s',
         'Sends uint16 numbers 250 thru 260, at a rate of 5 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.UINT16);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.UINT16);
 
           let numberToSend = 250;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([numberToSend & 0xff, (numberToSend >> 8) & 0xff]));
+            session.parseRxData(Uint8Array.from([numberToSend & 0xff, (numberToSend >> 8) & 0xff]));
             numberToSend += 1;
             if (numberToSend === 261) {
               numberToSend = 250;
@@ -1163,20 +1163,20 @@ export default class FakePortsController {
         'dataType: int16, numbers: 250-260, endianness: little, 1chars/s',
         'Sends int16 numbers -10 thru 10, in little endian format, at a rate of 5 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.INT16);
-          app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.numberSeparator.apply();
-          app.settings.rxSettings.setPadValues(true);
-          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.INT16);
+          session.settings.rxSettings.setInsertNewLineOnValue(false);
+          session.settings.rxSettings.numberSeparator.setDispValue(' ');
+          session.settings.rxSettings.numberSeparator.apply();
+          session.settings.rxSettings.setPadValues(true);
+          session.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
           let numberToSend = -10;
           const intervalId = setInterval(() => {
             const array = new ArrayBuffer(2);
             const view = new DataView(array);
             view.setInt16(0, numberToSend, true); // Little endian
-            app.parseRxData(Uint8Array.from([view.getUint8(0), view.getUint8(1)]));
+            session.parseRxData(Uint8Array.from([view.getUint8(0), view.getUint8(1)]));
             numberToSend += 1;
             if (numberToSend === 11) {
               numberToSend = -10;
@@ -1201,13 +1201,13 @@ export default class FakePortsController {
         'dataType: float32, numbers: -1 to 1 in 0.25 steps, endianness: little, 1chars/s',
         'Sends 32-bit floating point numbers -1 to 1 in 0.25 steps, in little endian format, at a rate of 5 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
-          app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.numberSeparator.apply();
-          app.settings.rxSettings.setPadValues(true);
-          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          session.settings.rxSettings.setInsertNewLineOnValue(false);
+          session.settings.rxSettings.numberSeparator.setDispValue(' ');
+          session.settings.rxSettings.numberSeparator.apply();
+          session.settings.rxSettings.setPadValues(true);
+          session.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
           let numberToSend = -1.0;
           const intervalId = setInterval(() => {
@@ -1215,7 +1215,7 @@ export default class FakePortsController {
             const view = new DataView(array);
             view.setFloat32(0, numberToSend, true); // Little endian
             const uint8Array = new Uint8Array(array);
-            app.parseRxData(uint8Array);
+            session.parseRxData(uint8Array);
             numberToSend += 0.25;
             if (numberToSend > 1.05) {
               numberToSend = -1.0;
@@ -1240,13 +1240,13 @@ export default class FakePortsController {
         'dataType: float32, numbers: random in the range -100 to 100, endianness: little, 1chars/s',
         'Sends random 32-bit floating point numbers in the range -100 to 100, in little endian format, at a rate of 1 characters per second.',
         () => {
-          app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
-          app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.numberSeparator.apply();
-          app.settings.rxSettings.setPadValues(true);
-          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+          session.settings.rxSettings.setDataType(DataType.NUMBER);
+          session.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          session.settings.rxSettings.setInsertNewLineOnValue(false);
+          session.settings.rxSettings.numberSeparator.setDispValue(' ');
+          session.settings.rxSettings.numberSeparator.apply();
+          session.settings.rxSettings.setPadValues(true);
+          session.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
           const intervalId = setInterval(() => {
             const array = new ArrayBuffer(4);
@@ -1255,7 +1255,7 @@ export default class FakePortsController {
             const numberToSend = Math.random() * 200 - 100;
             view.setFloat32(0, numberToSend, true); // Little endian
             const uint8Array = new Uint8Array(array);
-            app.parseRxData(uint8Array);
+            session.parseRxData(uint8Array);
           }, 1000);
           return intervalId;
         },
@@ -1276,8 +1276,8 @@ export default class FakePortsController {
         'Command Based Graphing Demo: Single Plot, Single Trace',
         'Demonstrates command based graphing with a single plot and a single trace. Uses a single command per line.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.graphing.setGraphingEnabled(true);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
           const setupCommands = [
@@ -1287,7 +1287,7 @@ export default class FakePortsController {
 
           // Send setup commands immediately
           for (const command of setupCommands) {
-            app.parseRxData(new TextEncoder().encode(command));
+            session.parseRxData(new TextEncoder().encode(command));
           }
 
           // Generate realistic sensor data
@@ -1295,7 +1295,7 @@ export default class FakePortsController {
             // Simulate temperature: 20-30°C with daily variation
             const temp = 25 + 5 * Math.sin(Date.now() / 100000) + (Math.random() - 0.5) * 2;
             const tempCommand = `$NT:GPH:ADD_DATA,trace=temp,data=${temp.toFixed(1)};\n`;
-            app.parseRxData(new TextEncoder().encode(tempCommand));
+            session.parseRxData(new TextEncoder().encode(tempCommand));
           }, 1000); // 1 Hz
 
           return intervalId;
@@ -1316,8 +1316,8 @@ export default class FakePortsController {
         'Command Based Graphing Demo: Single Plot, 3 Traces',
         'Demonstrates command based graphing with a single plot and multiple traces. Uses a single command per line.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.graphing.setGraphingEnabled(true);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
           const setupCommands = [
@@ -1328,7 +1328,7 @@ export default class FakePortsController {
           ];
 
           for (const command of setupCommands) {
-            app.parseRxData(new TextEncoder().encode(command));
+            session.parseRxData(new TextEncoder().encode(command));
           }
 
           let counter = 0;
@@ -1342,9 +1342,9 @@ export default class FakePortsController {
             const yCommand = `$NT:GPH:ADD_DATA,trace=y,data=${yAccel.toFixed(2)};\n`;
             const zCommand = `$NT:GPH:ADD_DATA,trace=z,data=${zAccel.toFixed(2)};\n`;
 
-            app.parseRxData(new TextEncoder().encode(xCommand));
-            app.parseRxData(new TextEncoder().encode(yCommand));
-            app.parseRxData(new TextEncoder().encode(zCommand));
+            session.parseRxData(new TextEncoder().encode(xCommand));
+            session.parseRxData(new TextEncoder().encode(yCommand));
+            session.parseRxData(new TextEncoder().encode(zCommand));
 
             counter++;
           }, 100); // 10 Hz
@@ -1367,8 +1367,8 @@ export default class FakePortsController {
         'Command Based Graphing Demo: XY Position (Data X-axis)',
         'Demonstrates command based graphing with explicit x,y coordinate plotting for position tracking.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.graphing.setGraphingEnabled(true);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
           const setupCommands = [
@@ -1376,7 +1376,7 @@ export default class FakePortsController {
           ];
 
           for (const command of setupCommands) {
-            app.parseRxData(new TextEncoder().encode(command));
+            session.parseRxData(new TextEncoder().encode(command));
           }
 
           let angle = 0;
@@ -1387,7 +1387,7 @@ export default class FakePortsController {
             const y = radius * Math.sin(angle);
 
             const command = `$NT:GPH:ADD_DATA,trace=path,data=${x.toFixed(2)},${y.toFixed(2)};\n`;
-            app.parseRxData(new TextEncoder().encode(command));
+            session.parseRxData(new TextEncoder().encode(command));
 
             angle += 0.2;
             if (angle > 20 * Math.PI) { // Reset after ~10 spirals
@@ -1413,9 +1413,9 @@ export default class FakePortsController {
         'Three Phase and Temperature Sensor Plots',
         'Demonstrates two plots: three-phase sine waves and temperature sensors.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.graphing.setGraphingEnabled(true);
-          app.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.graphing.setGraphingEnabled(true);
+          session.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
           // Setup sequence - create plots and traces
           const setupCommands = [
@@ -1431,7 +1431,7 @@ export default class FakePortsController {
           ];
 
           for (const command of setupCommands) {
-            app.parseRxData(new TextEncoder().encode(command));
+            session.parseRxData(new TextEncoder().encode(command));
           }
 
           let secondCounter = 0;
@@ -1447,8 +1447,8 @@ export default class FakePortsController {
             const sensor1Temp = (baseTempSensor1 + (Math.random() - 0.5) * 0.5).toFixed(1);
             const sensor2Temp = (baseTempSensor2 + (Math.random() - 0.5) * 0.4).toFixed(1);
 
-            app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor1,data=${sensor1Temp};\n`));
-            app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor2,data=${sensor2Temp};\n`));
+            session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor1,data=${sensor1Temp};\n`));
+            session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor2,data=${sensor2Temp};\n`));
 
             // Sine wave updates - every 3rd second (every 3rd callback)
             if (secondCounter % 3 === 0) {
@@ -1472,10 +1472,10 @@ export default class FakePortsController {
               }
 
               // Clear previous data and send new full cycles
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=sine_waves;\n'));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
+              session.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=sine_waves;\n'));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
             }
           }, 1000); // Fire every second
 
@@ -1497,7 +1497,7 @@ export default class FakePortsController {
         'Creating and Deleting Figures',
         'Demonstrates command based graphing with creating, clearing, and deleting figures and traces.',
         () => {
-          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          session.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
 
           let phase = 0; // 0: setup, 1: data, 2: clear, 3: new plot, 4: more data, 5: delete
           let dataCounter = 0;
@@ -1512,7 +1512,7 @@ export default class FakePortsController {
               ];
 
               for (const command of setupCommands) {
-                app.parseRxData(new TextEncoder().encode(command));
+                session.parseRxData(new TextEncoder().encode(command));
               }
               phase = 1;
               dataCounter = 0;
@@ -1522,8 +1522,8 @@ export default class FakePortsController {
               const wave1 = Math.sin(dataCounter * 0.2) * 10;
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
 
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace1,data=${wave1.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace1,data=${wave1.toFixed(2)};\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
@@ -1533,8 +1533,8 @@ export default class FakePortsController {
 
             } else if (phase === 2) {
               // Delete one trace
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_TRACE,trace=trace1;\n'));
-              app.parseRxData(new TextEncoder().encode('Deleted trace1 trace.\n'));
+              session.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_TRACE,trace=trace1;\n'));
+              session.parseRxData(new TextEncoder().encode('Deleted trace1 trace.\n'));
               phase = 3;
 
             } else if (phase === 3) {
@@ -1545,7 +1545,7 @@ export default class FakePortsController {
               ];
 
               for (const command of setupCommands) {
-                app.parseRxData(new TextEncoder().encode(command));
+                session.parseRxData(new TextEncoder().encode(command));
               }
               phase = 4;
               dataCounter = 0;
@@ -1555,8 +1555,8 @@ export default class FakePortsController {
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
               const ramp = (dataCounter % 20) * 0.5; // Sawtooth wave
 
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace3,data=${ramp.toFixed(2)};\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
+              session.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace3,data=${ramp.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
@@ -1564,9 +1564,9 @@ export default class FakePortsController {
               }
             } else if (phase === 5) {
               // Delete first plot and restart cycle
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=fig1;\n'));
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_FIG,fig=fig2;\n'));
-              app.parseRxData(new TextEncoder().encode('Cleared fig1 and deleted fig2. Restarting cycle...\n'));
+              session.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=fig1;\n'));
+              session.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_FIG,fig=fig2;\n'));
+              session.parseRxData(new TextEncoder().encode('Cleared fig1 and deleted fig2. Restarting cycle...\n'));
 
               phase = 6;
               dataCounter = 0;
@@ -1625,22 +1625,22 @@ export default class FakePortsController {
 
   openPort() {
     this.fakePorts[this.selFakePortIdx].connect();
-    this.app.connController.connState = ConnState.OPENED;
+    this.session.connController.connState = ConnState.OPENED;
     this.fakePortOpen = true;
-    this.app.connController.useFakeSerialPort = true;
-    this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
+    this.session.connController.useFakeSerialPort = true;
+    this.session.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
 
     // Go to terminal view
-    if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
-      this.app.setShownMainPane(MainPanes.TERMINAL);
+    if (this.session.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+      this.session.showTerminalPane();
     }
   }
 
   closePort() {
     this.fakePorts[this.selFakePortIdx].disconnect();
-    this.app.connController.useFakeSerialPort = false;
-    this.app.connController.connState = ConnState.CLOSED;
+    this.session.connController.useFakeSerialPort = false;
+    this.session.connController.connState = ConnState.CLOSED;
     this.fakePortOpen = false;
-    this.app.snackbar.sendToSnackbar('Fake serial port closed.', 'success');
+    this.session.snackbar.sendToSnackbar('Fake serial port closed.', 'success');
   }
 }
