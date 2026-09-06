@@ -209,11 +209,22 @@ The current rows in view are ignored when performing Erase in Display commands, 
 Sets the text style for subsequent characters. Multiple codes can be combined, separated by `;` (e.g. `ESC[1;31m` for bold red). The supported codes are:
 
 - `0` — reset all styles (also the default when no code is given, i.e. `ESC[m`)
-- `1` — bold / increased intensity
+- `1` — bold / increased intensity (also brightens the foreground color)
 - `30`–`37` — foreground color, `90`–`97` — bright foreground color
 - `40`–`47` — background color, `100`–`107` — bright background color
 
-These can override the default background/TX/RX colors set in `Settings > Display`.
+| Color | Foreground | Bright foreground | Background | Bright background |
+| --- | --- | --- | --- | --- |
+| Black | 30 | 90 | 40 | 100 |
+| Red | 31 | 91 | 41 | 101 |
+| Green | 32 | 92 | 42 | 102 |
+| Yellow | 33 | 93 | 43 | 103 |
+| Blue | 34 | 94 | 44 | 104 |
+| Magenta | 35 | 95 | 45 | 105 |
+| Cyan | 36 | 96 | 46 | 106 |
+| White | 37 | 97 | 47 | 107 |
+
+For example `ESC[31;44m` is red on blue, and `ESC[91;44;1m` is bright red on blue, bold. These can override the default background/TX/RX colors set in `Settings > Display`.
 
 ## Timestamps
 
@@ -292,13 +303,73 @@ All three agree on the bytes below `0x80` — control characters below `0x20`, p
 
 CP437 is the one to pick for DOS-style text-mode output, where a single byte is a single box-drawing character — e.g. byte `0xDA` is `┌` and `0xC4` is `─`. Devices that send UTF-8 (three bytes per box-drawing character) want the UTF-8 option instead.
 
-Which to use is really a question about your firmware's source file, not your device. If your toolchain saves source as UTF-8 (STM32CubeIDE does, for example) you have two options:
+Which to use is really a question about your firmware's source file, not your device. If your toolchain saves source as UTF-8 (STM32CubeIDE does, for example) you have three options:
 
-- Pick **UTF-8** in NinjaTerm and write the box-drawing characters directly in your source: `printf("┌───┐")`. The compiler encodes them as UTF-8 and NinjaTerm decodes them back.
-- Pick **CP437** and emit the raw bytes with hex escapes: `printf("\xDA\xC4\xC4\xC4\xBF")`. More faithful to a real DOS device, but harder to read in the source.
+- **Recommended:** pick **CP437** in NinjaTerm, write the box-drawing characters directly in your source (`printf("┌───┐")`), and tell the compiler to emit them as CP437. With GCC, add `-fexec-charset=cp437` to the compiler flags (in STM32CubeIDE: Project Properties → C/C++ Build → Settings → MCU GCC Compiler → Miscellaneous). The source stays readable and each box-drawing character is one byte in flash and on the wire.
+- Pick **UTF-8** in NinjaTerm and write the characters directly in your source, with no compiler flag. The compiler encodes them as UTF-8 and NinjaTerm decodes them back — but each box-drawing character costs three bytes.
+- Pick **CP437** and emit the raw bytes with hex escapes: `printf("\xDA\xC4\xC4\xC4\xBF")`. One byte per character with no compiler flag, but harder to read in the source. The byte values are in the reference below.
 
 
 This setting decides how bytes are *decoded*; the Terminal Font setting below decides whether the resulting characters have glyphs to draw with. You need both for text-mode frames to display.
+
+### CP437 Box-Drawing Reference
+
+The 40 box-drawing characters in CP437, as the byte your device sends. Decimal is what a Windows Alt code uses; the hex form is what you write in a C string.
+
+**Single line**
+
+| Glyph | Decimal | Hex | Glyph | Decimal | Hex |
+| :---: | --- | --- | :---: | --- | --- |
+| ┌ | 218 | `\xDA` | ┐ | 191 | `\xBF` |
+| └ | 192 | `\xC0` | ┘ | 217 | `\xD9` |
+| ─ | 196 | `\xC4` | │ | 179 | `\xB3` |
+| ├ | 195 | `\xC3` | ┤ | 180 | `\xB4` |
+| ┬ | 194 | `\xC2` | ┴ | 193 | `\xC1` |
+| ┼ | 197 | `\xC5` | | | |
+
+**Double line**
+
+| Glyph | Decimal | Hex | Glyph | Decimal | Hex |
+| :---: | --- | --- | :---: | --- | --- |
+| ╔ | 201 | `\xC9` | ╗ | 187 | `\xBB` |
+| ╚ | 200 | `\xC8` | ╝ | 188 | `\xBC` |
+| ═ | 205 | `\xCD` | ║ | 186 | `\xBA` |
+| ╠ | 204 | `\xCC` | ╣ | 185 | `\xB9` |
+| ╦ | 203 | `\xCB` | ╩ | 202 | `\xCA` |
+| ╬ | 206 | `\xCE` | | | |
+
+**Mixed: single vertical, double horizontal**
+
+| Glyph | Decimal | Hex | Glyph | Decimal | Hex |
+| :---: | --- | --- | :---: | --- | --- |
+| ╒ | 213 | `\xD5` | ╕ | 184 | `\xB8` |
+| ╘ | 212 | `\xD4` | ╛ | 190 | `\xBE` |
+| ╞ | 198 | `\xC6` | ╡ | 181 | `\xB5` |
+| ╤ | 209 | `\xD1` | ╧ | 207 | `\xCF` |
+| ╪ | 216 | `\xD8` | | | |
+
+**Mixed: double vertical, single horizontal**
+
+| Glyph | Decimal | Hex | Glyph | Decimal | Hex |
+| :---: | --- | --- | :---: | --- | --- |
+| ╓ | 214 | `\xD6` | ╖ | 183 | `\xB7` |
+| ╙ | 211 | `\xD3` | ╜ | 189 | `\xBD` |
+| ╟ | 199 | `\xC7` | ╢ | 182 | `\xB6` |
+| ╥ | 210 | `\xD2` | ╨ | 208 | `\xD0` |
+| ╫ | 215 | `\xD7` | | | |
+
+**Blocks and shades**
+
+| Glyph | Decimal | Hex | Glyph | Decimal | Hex |
+| :---: | --- | --- | :---: | --- | --- |
+| ░ | 176 | `\xB0` | ▒ | 177 | `\xB1` |
+| ▓ | 178 | `\xB2` | █ | 219 | `\xDB` |
+| ▄ | 220 | `\xDC` | ▀ | 223 | `\xDF` |
+| ▌ | 221 | `\xDD` | ▐ | 222 | `\xDE` |
+
+:::note
+Typing these on Windows with Alt + decimal on the numpad goes through Windows' *OEM* code page, which is CP437 only on a US install. Many European installs use CP850, where the 18 mixed single/double characters (181–184, 189, 190, 198, 199 and 207–216) are replaced by accented letters, so those Alt codes type the wrong character. Use the hex escapes instead, or copy the glyphs from the tables above.
+:::
 
 ### Terminal Font
 
@@ -309,12 +380,12 @@ The font used to display data in the terminal can be changed in `Settings > Disp
 | NinjaTerm (default) | NinjaTerm's own font. Covers ASCII only. |
 | IBM VGA (DOS/CP437) | The bundled IBM VGA 8x16 DOS text-mode font. Covers the CP437 box-drawing and block characters, so text-mode frames and borders drawn with `─│┌┐└┘├┤` render properly. |
 | Perfect DOS VGA 437 | The bundled Perfect DOS VGA 437 font, another DOS text-mode font that also covers the CP437 box-drawing characters. |
+| System monospace | Whatever monospace font your operating system provides (Consolas, Menlo, DejaVu Sans Mono, ...). |
+| Custom... | Any monospace font already installed on your computer, named in the "Custom Font Family" box that appears — e.g. `Perfect DOS VGA 437`. |
 
 :::tip
 Both DOS fonts are bitmap fonts whose glyphs fill their cell exactly, so set **Vertical Row Padding** to `0` when you use one. Any padding leaves a gap between rows, and the vertical strokes of a box-drawing frame stop joining up. The "DOS text-mode (CP437)" preset does this for you. NinjaTerm's own font has built-in spacing and looks better with a few pixels of padding.
 :::
-| System monospace | Whatever monospace font your operating system provides (Consolas, Menlo, DejaVu Sans Mono, ...). |
-| Custom... | Any monospace font already installed on your computer, named in the "Custom Font Family" box that appears — e.g. `Perfect DOS VGA 437`. |
 
 Characters missing from the selected font fall back to a system monospace font, so the terminal's character grid always stays aligned. Combined with the cursor positioning escape codes above, this is what makes full-screen text-mode user interfaces display correctly.
 
