@@ -291,11 +291,11 @@ Tailor your terminal's appearance by setting default colors for the background, 
 
 ### Character Encoding
 
-The character encoding of received data — how the incoming bytes are turned into the characters you see — is set in `Settings > RX Settings`:
+The character encoding of received data (how the incoming bytes are turned into the characters you see) is set in `Settings > RX Settings`:
 
 | Option | Description |
 | --- | --- |
-| ASCII only (default) | 7-bit ASCII. Bytes `0x80`+ aren't text, so they're shown as hex glyphs (or swallowed) per the non-visible character setting. Best for general debugging, where the raw byte value is what matters. |
+| ASCII only (default) | 7-bit ASCII. Bytes `0x80`+ aren't text, so they're shown as hex glyphs (or swallowed) per the non-visible character setting. Best for simple use cases and general purpose debugging. |
 | UTF-8 | Decode bytes `0x80`+ as UTF-8. Characters split across separate reads from the port are handled. Bytes that aren't valid UTF-8 fall back to hex glyphs so they stay visible. |
 | CP437 (DOS) | Decode bytes `0x80`+ as code page 437, the original IBM PC / MS-DOS character set. |
 
@@ -303,12 +303,11 @@ All three agree on the bytes below `0x80` — control characters below `0x20`, p
 
 CP437 is the one to pick for DOS-style text-mode output, where a single byte is a single box-drawing character — e.g. byte `0xDA` is `┌` and `0xC4` is `─`. Devices that send UTF-8 (three bytes per box-drawing character) want the UTF-8 option instead.
 
-Which to use is really a question about your firmware's source file, not your device. If your toolchain saves source as UTF-8 (STM32CubeIDE does, for example) you have three options:
+Which to use depends on your firmware source code and build settings. If your toolchain saves source as UTF-8 (STM32CubeIDE does, for example) you have three options:
 
 - **Recommended:** pick **CP437** in NinjaTerm, write the box-drawing characters directly in your source (`printf("┌───┐")`), and tell the compiler to emit them as CP437. With GCC, add `-fexec-charset=cp437` to the compiler flags (in STM32CubeIDE: Project Properties → C/C++ Build → Settings → MCU GCC Compiler → Miscellaneous). The source stays readable and each box-drawing character is one byte in flash and on the wire.
-- Pick **UTF-8** in NinjaTerm and write the characters directly in your source, with no compiler flag. The compiler encodes them as UTF-8 and NinjaTerm decodes them back — but each box-drawing character costs three bytes.
+- Pick **UTF-8** in NinjaTerm and write the characters directly in your source, with no compiler flag. The compiler encodes them as UTF-8 and NinjaTerm decodes them back. Just be aware that each box-drawing character costs three bytes.
 - Pick **CP437** and emit the raw bytes with hex escapes: `printf("\xDA\xC4\xC4\xC4\xBF")`. One byte per character with no compiler flag, but harder to read in the source. The byte values are in the reference below.
-
 
 This setting decides how bytes are *decoded*; the Terminal Font setting below decides whether the resulting characters have glyphs to draw with. You need both for text-mode frames to display.
 
