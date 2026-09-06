@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.19.0] - 2026-09-06
+
 ### Added
 
 - **Multiple sessions.** A tab strip above the main pane holds one session per tab, each with its own connection, terminal settings, macros, filters, rules, logging and graphing — RTT from one board in one tab and serial from another in the next, in a single window. The "+" button opens a session with default settings; drag a tab to reorder, right-click it to rename, duplicate or close; Ctrl+Tab / Ctrl+Shift+Tab switch. Sessions persist as `appData.sessions` (app data v25 wraps the old single config as "Session 1") and the settings pane names the session it is editing.
@@ -1187,6 +1189,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.19.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.18.0...v5.19.0
 [5.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.17.0...v5.18.0
 [5.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.16.0...v5.17.0
 [5.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.15.0...v5.16.0
