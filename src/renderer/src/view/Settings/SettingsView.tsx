@@ -117,10 +117,10 @@ function SettingsDialog(props: Props) {
       <PortConfigurationSettingsView app={app} />
     ),
     [SettingsCategories.TX_SETTINGS]: (
-      <TxSettingsView txSettings={app.settings.txSettings} />
+      <TxSettingsView txSettings={app.settings.txSettings} displaySettings={app.settings.displaySettings} />
     ),
     [SettingsCategories.RX_SETTINGS]: (
-      <DataProcessingSettingsView rxSettings={app.settings.rxSettings} />
+      <DataProcessingSettingsView rxSettings={app.settings.rxSettings} displaySettings={app.settings.displaySettings} />
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={app} />

@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
-import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import type { Session } from 'src/model/Session/Session';
 import { ConnController } from '@/model/ConnController/ConnController';
 import type { PortSettingsData } from 'src/model/AppDataManager/DataClasses/PortSettingsData';
@@ -67,11 +66,6 @@ export enum RttInterface {
 export class PortSettings {
 
   session: Session;
-
-  /** App-wide data (presets, MCP flags). Reached through the session. */
-  get profileManager(): AppDataManager {
-    return this.session.app.profileManager;
-  }
 
   /** See `SettingsBranch` for how this class relates to `PortSettingsData`. */
   private readonly branch = new SettingsBranch<PortSettingsData>(

@@ -6,7 +6,11 @@ const RX_DATA_BATCH_TIMEOUT_MS = 50;
 /**
  * How long to wait for a socket to connect before timing out.
  */
-const SOCKET_CONNECT_TIMEOUT_MS = 2 * 1000;
+/**
+ * Connect timeout used when the renderer does not send one. The renderer
+ * always does (it is the "Connection timeout" setting); this is a fallback.
+ */
+const DEFAULT_SOCKET_CONNECT_TIMEOUT_MS = 2 * 1000;
 
 /**
  * Stores a mapping of socket connection identifier to the socket object for all currently open socket connections.
@@ -39,9 +43,10 @@ function sendBatchedData(connectionId: string, mainWindow: BrowserWindow | null)
  * @param mainWindow The main window of the application.
  */
 export function initializeSocketHandlers(mainWindow: BrowserWindow) {
-  ipcMain.handle('socket:connect', async (event, options: { host: string; port: number }) => {
+  ipcMain.handle('socket:connect', async (event, options: { host: string; port: number; connTimeoutMs?: number }) => {
     console.log('socket:connect called. options: ', options);
     const connectionId = `${options.host}:${options.port}`;
+    const connTimeoutMs = options.connTimeoutMs ?? DEFAULT_SOCKET_CONNECT_TIMEOUT_MS;
     let socket: net.Socket | undefined;
 
     try {
@@ -50,7 +55,7 @@ export function initializeSocketHandlers(mainWindow: BrowserWindow) {
       }
 
       socket = new net.Socket();
-      socket.setTimeout(SOCKET_CONNECT_TIMEOUT_MS);
+      socket.setTimeout(connTimeoutMs);
 
       // One problem with sockets is that if you just pull out the ethernet cable after the connection is established,
       // nothing will detect it is broken.
@@ -84,9 +89,9 @@ export function initializeSocketHandlers(mainWindow: BrowserWindow) {
             if (!socketRef.destroyed) {
               socketRef.destroy();
             }
-            reject(new Error(`Timeout while connecting to socket ${connectionId}. Waited for ${SOCKET_CONNECT_TIMEOUT_MS / 1000} s.`));
+            reject(new Error(`Timeout while connecting to socket ${connectionId}. Waited for ${connTimeoutMs / 1000} s.`));
           }
-        }, SOCKET_CONNECT_TIMEOUT_MS);
+        }, connTimeoutMs);
 
         socketRef.on('connect', () => {
           if (!settled) {

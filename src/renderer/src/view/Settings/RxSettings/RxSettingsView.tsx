@@ -20,12 +20,16 @@ import RxSettings, {
 import BorderedSection from 'src/view/Components/BorderedSection';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
 
+import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
+
 interface Props {
   rxSettings: RxSettings;
+  /** For the tooltip configuration. */
+  displaySettings: DisplaySettings;
 }
 
 function RxSettingsView(props: Props) {
-  const { rxSettings } = props;
+  const { rxSettings, displaySettings } = props;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -43,11 +47,11 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* ASCII */}
-              <Tooltip title="Interpret RX data as ASCII characters." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+              <Tooltip title="Interpret RX data as ASCII characters." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                 <FormControlLabel value={DataType.ASCII} control={<Radio />} label="ASCII" />
               </Tooltip>
               {/* NUMBER */}
-              <Tooltip title="Interpret RX data as a type of number." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+              <Tooltip title="Interpret RX data as a type of number." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                 <FormControlLabel value={DataType.NUMBER} control={<Radio data-testid="data-type-number-radio-button" />} label="Number (e.g. hex, uint8, int16, ...)" />
               </Tooltip>
             </RadioGroup>
@@ -73,8 +77,8 @@ function RxSettingsView(props: Props) {
               title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
           some of the move cursor commands are supported."
               placement="top"
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -97,8 +101,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="The max. length of escape code allowed (in characters). Certain malformed escape codes (or data interruptions) could cause the escape code parser to get stuck thinking the incoming data stream is part of an escape code. This limit is so that at a certain length the parser rejects the partial code and goes back to the IDLE state. This includes all characters in the escape code, including the starting \x1B byte. Must be a least 2 chars."
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 id="outlined-basic"
@@ -119,7 +123,7 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="If enabled, CSI escape sequences that are received but not supported by NinjaTerm (or that are malformed) are shown inline in the terminal as a highlighted marker, instead of being silently discarded. Useful for troubleshooting ANSI escape sequences. Requires ANSI escape code parsing to be enabled."
               placement="top"
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -142,7 +146,7 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="Open the NinjaTerm manual in your browser, at the section listing all supported ANSI escape codes."
               placement="top"
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <Button
                 variant="outlined"
@@ -172,8 +176,8 @@ function RxSettingsView(props: Props) {
           you see two of every character appear."
               placement="top"
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -216,15 +220,15 @@ function RxSettingsView(props: Props) {
                   }}
                 >
                   {/* DO NOTHING */}
-                  <Tooltip title="Don't move the cursor at all when a new line character is received." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                  <Tooltip title="Don't move the cursor at all when a new line character is received." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                     <FormControlLabel value={NewLineCursorBehavior.DO_NOTHING} control={<Radio />} label="Don't move the cursor" data-testid="new-line-dont-move-cursor" />
                   </Tooltip>
                   {/* MOVE DOWN ONE LINE */}
                   <Tooltip
                     title="Move the cursor directly down one line. A separate carriage return is required if you want to move the cursor to the start of the new line."
                     placement="right"
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
                   >
                     <FormControlLabel value={NewLineCursorBehavior.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
                   </Tooltip>
@@ -232,8 +236,8 @@ function RxSettingsView(props: Props) {
                   <Tooltip
                     title="Move the cursor back to the start of the line and then down one line. This is the most common behavior for receiving a new line character."
                     placement="right"
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
                   >
                     <FormControlLabel
                       value={NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE}
@@ -247,8 +251,8 @@ function RxSettingsView(props: Props) {
               <Tooltip
                 title="If enabled, new line characters will not be printed to the terminal display. If disabled, new line characters will be printed before any cursor movement occurs because of the new line, such that the new line character will be printed at the end of the existing line, not the start of the new line."
                 placement="right"
-                {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                {...displaySettings.getBasicTooltipConfig()}
+                {...displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   control={
@@ -289,20 +293,20 @@ function RxSettingsView(props: Props) {
                   }}
                 >
                   {/* DO NOTHING */}
-                  <Tooltip title="Don't move the cursor at all when a carriage return character is received." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                  <Tooltip title="Don't move the cursor at all when a carriage return character is received." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                     <FormControlLabel value={CarriageReturnCursorBehavior.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
                   </Tooltip>
                   {/* MOVE CURSOR TO START OF LINE */}
                   <Tooltip
                     title="Move the cursor to the start of the current line. A separate new line character is required if you want to move the cursor down one line."
                     placement="right"
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                    {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
+                    {...displaySettings.getBasicTooltipConfig()}
                   >
                     <FormControlLabel value={CarriageReturnCursorBehavior.CARRIAGE_RETURN} control={<Radio />} label="Move cursor to the start of the current line" />
                   </Tooltip>
                   {/* CARRIAGE RETURN AND NEW LINE */}
-                  <Tooltip title="Move the cursor back to the start of the line and then down one line." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                  <Tooltip title="Move the cursor back to the start of the line and then down one line." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                     <FormControlLabel
                       value={CarriageReturnCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE}
                       control={<Radio />}
@@ -315,8 +319,8 @@ function RxSettingsView(props: Props) {
               <Tooltip
                 title="If enabled, carriage return characters will not be printed to the terminal display. If disabled, carriage return characters will be printed before any cursor movement occurs because of the carriage return, such that the carriage return character will be printed at the end of the row, not the start of the row."
                 placement="right"
-                {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                {...displaySettings.getBasicTooltipConfig()}
+                {...displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   control={
@@ -360,7 +364,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Don't interpret backspace bytes. They are displayed as a control glyph (or swallowed) just like any other non-visible character, per the setting below."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={BackspaceBehavior.DO_NOTHING} control={<Radio />} label="Don't interpret (display as a glyph)" />
                 </Tooltip>
@@ -368,7 +372,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Move the cursor one column left without deleting anything. This is the strict ANSI/VT backspace behavior (a well-behaved device erases by sending the 3-byte sequence \b \b)."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={BackspaceBehavior.MOVE_CURSOR_LEFT} control={<Radio />} label="Move the cursor one column to the left" />
                 </Tooltip>
@@ -376,7 +380,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Move the cursor one column left and delete the character there (destructive backspace). This erases the previous character, which is usually what you want when typing into a serial console with local echo."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={BackspaceBehavior.DELETE_CHAR} control={<Radio />} label="Move the cursor one column to the left and delete the character" />
                 </Tooltip>
@@ -408,7 +412,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Don't interpret form feed bytes. They are displayed as a control glyph (or swallowed) just like any other non-visible character, per the setting below. This is the standards-correct behavior (ECMA-48/VT100 do not clear the screen on form feed)."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={FormFeedBehavior.DO_NOTHING} control={<Radio />} label="Don't interpret (display as a glyph)" />
                 </Tooltip>
@@ -416,7 +420,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Erase the visible screen but keep the scrollback buffer (equivalent to the ANSI ESC[2J sequence). Useful for embedded devices that send a bare form feed to clear the terminal."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={FormFeedBehavior.CLEAR_SCREEN} control={<Radio />} label="Clear the screen (keep scrollback)" />
                 </Tooltip>
@@ -424,7 +428,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Erase the visible screen and the scrollback buffer (equivalent to the ANSI ESC[3J sequence)."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK} control={<Radio />} label="Clear the screen and scrollback" />
                 </Tooltip>
@@ -456,7 +460,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Bytes 0x80 and above are not treated as text. They are displayed as hex glyphs (or swallowed) per the non-visible character setting below. Best for general debugging, where seeing the raw byte value matters more than reading it as text."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={CharacterEncoding.ASCII} control={<Radio />} label="ASCII only (show 0x80+ as glyphs)" />
                 </Tooltip>
@@ -464,7 +468,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Decode bytes 0x80 and above as UTF-8. Multi-byte characters split across separate reads from the port are handled. Bytes that are not valid UTF-8 fall back to hex glyphs so they stay visible."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={CharacterEncoding.UTF8} control={<Radio />} label="UTF-8" />
                 </Tooltip>
@@ -472,7 +476,7 @@ function RxSettingsView(props: Props) {
                 <Tooltip
                   title="Decode bytes 0x80 and above as code page 437, the original IBM PC / MS-DOS character set. This is what DOS-style text-mode applications use to draw frames and borders (e.g. byte 0xDA is the top-left corner and 0xC4 the horizontal line). Pair with a DOS terminal font in Settings > Display."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={CharacterEncoding.CP437} control={<Radio />} label="CP437 (DOS)" />
                 </Tooltip>
@@ -502,15 +506,15 @@ function RxSettingsView(props: Props) {
                 }}
               >
                 {/* SWALLOW */}
-                <Tooltip title="Do not display bytes that are not visible ASCII characters." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Do not display bytes that are not visible ASCII characters." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={NonVisibleCharDisplayBehaviors.SWALLOW} control={<Radio />} label="Swallow" />
                 </Tooltip>
                 {/* ASCII CONTROL CODES GLYPHS AND HEX GLYPHS */}
                 <Tooltip
                   title="Convert bytes that are control chars into control char glyphs, and all other bytes that are not valid ASCII characters ([0x80-0xFF]) into hex code glyphs."
                   placement="right"
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
+                  {...displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel
                     value={NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS}
@@ -519,7 +523,7 @@ function RxSettingsView(props: Props) {
                   />
                 </Tooltip>
                 {/* ALL TO HEX CODE GLYPHS */}
-                <Tooltip title="Convert all non-visible ASCII characters into hex code glyphs." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Convert all non-visible ASCII characters into hex code glyphs." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={NonVisibleCharDisplayBehaviors.HEX_GLYPHS} control={<Radio />} label="Convert all to hex code glyphs" />
                 </Tooltip>
               </RadioGroup>
@@ -540,8 +544,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="The type of number of interpret data as. Some types require only one byte, others are multi-byte which will buffer data and require the endianness to be set correctly."
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControl sx={{ minWidth: 160, marginBottom: '15px' }} size="small">
                 <InputLabel id="demo-select-small-label">Number Type</InputLabel>
@@ -569,8 +573,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first. Most MCUs use little endian for their memory layout, so if you are sending the lowest memory address first of a multi-byte type, you are probably using little endian."
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControl sx={{ minWidth: 160, marginBottom: '15px' }} size="small">
                 <InputLabel>Endianness</InputLabel>
@@ -598,8 +602,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title='This string is append to every displayed numerical value. For example, use " " to separate values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 id="outlined-basic"
@@ -618,8 +622,8 @@ function RxSettingsView(props: Props) {
               title="If enabled, numerical values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row even when starting from the first column (e.g. small column count)."
               placement="right"
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -641,8 +645,8 @@ function RxSettingsView(props: Props) {
               title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when you have specific start-of-packet/end-of-packet delimiters and you want to display one packet per row."
               placement="right"
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -663,8 +667,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff". This is always a hex value, no matter what the selected number type is. It is compared against the raw bytes received that make up the number, not the interpreted number value. For example, if you were displaying uint16 and wanted to create a new line on the value 1000, you would enter "3E8". If you were displaying int16 and wanted a new line on -10, you would enter "FFF6".'
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 label="Value to insert new line on"
@@ -687,11 +691,11 @@ function RxSettingsView(props: Props) {
                 }}
               >
                 {/* UPPERCASE */}
-                <Tooltip title="Insert new line before the detected value. Useful if the value indicates the start of a packet." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Insert new line before the detected value. Useful if the value indicates the start of a packet." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={NewLinePlacementOnHexValue.BEFORE} control={<Radio />} label="Before" />
                 </Tooltip>
                 {/* LOWERCASE */}
-                <Tooltip title="Insert new line after the detected value. Useful if the value indicates the end of a packet." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Insert new line after the detected value. Useful if the value indicates the end of a packet." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={NewLinePlacementOnHexValue.AFTER} control={<Radio />} label="After" />
                 </Tooltip>
               </RadioGroup>
@@ -705,8 +709,8 @@ function RxSettingsView(props: Props) {
               title="Enable this to left-pad values to a consistent character width for integer and float types. Zeroes style padding is always applied to hex values."
               placement="right"
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -734,11 +738,11 @@ function RxSettingsView(props: Props) {
                 }}
               >
                 {/* 0's */}
-                <Tooltip title='Pad with 0&apos;s, e.g. "-003".' placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title='Pad with 0&apos;s, e.g. "-003".' placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio data-testid="pad-zeroes-radio-button" />} label="0's" />
                 </Tooltip>
                 {/* WHITESPACE */}
-                <Tooltip title='Pad with whitespace, e.g. "  -3".' placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title='Pad with whitespace, e.g. "  -3".' placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio data-testid="pad-whitespace-radio-button" />} label="<whitespace>" />
                 </Tooltip>
               </RadioGroup>
@@ -749,8 +753,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16). For floats, -1 equals 6 chars."
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 id="outlined-basic"
@@ -773,8 +777,8 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="The number of received bytes to convert into a single hex. number. For example, setting this to 1 will result in terminal display like 8E FF 05 33. Setting this to 2 will result in FF8E 3305 (if little endian). Uses the endianness setting above."
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 name="numBytesPerHexNumber"
@@ -801,11 +805,11 @@ function RxSettingsView(props: Props) {
                 }}
               >
                 {/* UPPERCASE */}
-                <Tooltip title="Use uppercase A-F when printing hex values." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Use uppercase A-F when printing hex values." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={HexCase.UPPERCASE} control={<Radio data-testid="hex-uppercase-radio-button" />} label="Uppercase" />
                 </Tooltip>
                 {/* LOWERCASE */}
-                <Tooltip title="Use lowercase a-f when printing hex values." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+                <Tooltip title="Use lowercase a-f when printing hex values." placement="right" {...displaySettings.getBasicTooltipConfig()}>
                   <FormControlLabel value={HexCase.LOWERCASE} control={<Radio data-testid="hex-lowercase-radio-button" />} label="Lowercase" />
                 </Tooltip>
               </RadioGroup>
@@ -817,8 +821,8 @@ function RxSettingsView(props: Props) {
               title='If enabled, "0x" will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!'
               placement="right"
               followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 disabled={rxSettings.numberType !== NumberType.HEX}
@@ -845,9 +849,9 @@ function RxSettingsView(props: Props) {
             <Tooltip
               title="Control how the float gets converted into a string. toString() converts the number to the smallest string representation which uniquely identifies the float. toFixed() creates the string representation with a fixed number of decimal places (settable in the input below)."
               // followCursor
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
               placement="top"
-              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+              {...displaySettings.getBasicTooltipConfig()}
             >
               <FormControl
                 sx={{ minWidth: 160, marginBottom: '15px' }}
@@ -876,7 +880,7 @@ function RxSettingsView(props: Props) {
             {/* ================================================ */}
             {/* FLOAT NUM. OF DECIMAL PLACES */}
             {/* ================================================ */}
-            <Tooltip title="The number of decimal places to round the float to if using toFixed()." followCursor {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="The number of decimal places to round the float to if using toFixed()." followCursor {...displaySettings.getBasicTooltipConfig()}>
               <ApplyableTextFieldView
                 name="floatNumOfDecimalPlaces"
                 label="Float num. of decimal places"
@@ -898,7 +902,7 @@ function RxSettingsView(props: Props) {
       {/* TIMESTAMP SETTINGS */}
       {/* =============================================================================== */}
       <BorderedSection title="Timestamp Settings" childStyle={{ display: 'flex', flexDirection: 'column' }}>
-        <Tooltip title="If enabled, timestamps will be added to the terminal. Timestamps are added to the start of each new line of received data. The time shown is when the first visible character of the line is received (i.e. ASCII control codes don't count). Timestamps are not added if the line was created due to wrapping of the line above it." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+        <Tooltip title="If enabled, timestamps will be added to the terminal. Timestamps are added to the start of each new line of received data. The time shown is when the first visible character of the line is received (i.e. ASCII control codes don't count). Timestamps are not added if the line was created due to wrapping of the line above it." placement="right" {...displaySettings.getBasicTooltipConfig()}>
           <FormControlLabel
             control={
               <Checkbox
@@ -919,22 +923,22 @@ function RxSettingsView(props: Props) {
               rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
             }}
           >
-            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.ISO8601_WITHOUT_TIMEZONE} control={<Radio />} label="ISO8601, no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.ISO8601_WITH_TIMEZONE} control={<Radio />} label="ISO8601, with timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps in local time (e.g. &quot;2025-06-04 12:04:45.832&quot;)." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps in local time (e.g. &quot;2025-06-04 12:04:45.832&quot;)." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. &quot;2025-06-04 12:04:45.832&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. &quot;1678886400&quot;)." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. &quot;1678886400&quot;)." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.UNIX_SECONDS} control={<Radio />} label="Unix Time, in seconds (e.g. &quot;1678886400&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. &quot;1678886400.123&quot;)." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. &quot;1678886400.123&quot;)." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS} control={<Radio />} label="Unix Time, seconds + milliseconds (e.g. &quot;1678886400.123&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+            <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" {...displaySettings.getBasicTooltipConfig()}>
               <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />
             </Tooltip>
           </RadioGroup>
@@ -942,8 +946,8 @@ function RxSettingsView(props: Props) {
         <Tooltip
           title="Enter a Moment.js format string. E.g., 'YYYY-MM-DD HH:mm:ss.SSS' for local time, 'X' for Unix timestamp (seconds), 'x' for Unix timestamp (milliseconds)."
           placement="right"
-          {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-          {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+          {...displaySettings.getBasicTooltipConfig()}
+          {...displaySettings.getBasicTooltipConfig()}
         >
           {/*
             The ApplyableTextFieldView needs to be wrapped in a div for the tooltip to work correctly when the text field is disabled.
@@ -989,8 +993,8 @@ function RxSettingsView(props: Props) {
         <Tooltip
           title='If enabled, a warning "snackbar" will be shown when a break signal is received. It it recommended to enable this if you do not usually expect break signals. It is recommended to disable this if break signals are expected (e.g. to frame raw data).'
           placement="right"
-          {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
-          {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+          {...displaySettings.getBasicTooltipConfig()}
+          {...displaySettings.getBasicTooltipConfig()}
         >
           <FormControlLabel
             control={

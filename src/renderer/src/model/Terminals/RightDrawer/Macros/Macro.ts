@@ -387,7 +387,7 @@ export class Macro {
    * settings modal can surface invalid-regex feedback in red.
    */
   get rxMatchRegex(): RegExp | null {
-    const key = `${this.rxMatchPattern} ${this.rxMatchCaseSensitive ? 'c' : 'i'}`;
+    const key = `${this.rxMatchPattern}\u0000${this.rxMatchCaseSensitive ? 'c' : 'i'}`;
     if (this._rxMatchRegexCache !== null && this._rxMatchRegexCache.key === key) {
       return this._rxMatchRegexCache.regex;
     }

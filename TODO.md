@@ -51,7 +51,7 @@ Follow-on work identified while doing it:
       commented out. Worth confirming they can go.
 
 <details>
-<summary>Original analysis (kept for context)</summary>
+<summary>Original analysis (kept for context; its checkboxes are historical, see the status above)</summary>
 
 ## 1. Terminal data model — the throughput ceiling  [perf]
 
@@ -184,14 +184,15 @@ the observability and the undo/subtree-replacement case.
 
 Found on the way:
 
-- [ ] **`socketConnTimeoutMs` is a dead setting.** It has a UI field, validation
-      and persistence, and nothing reads it — the socket connect never passes a
-      timeout. Either wire it into `socket:connect` or remove it (needs a
-      migration + UI change, so not done here).
-- [ ] **`RxSettingsView` reaches `displaySettings` via
-      `rxSettings.profileManager.app.settings.displaySettings`** (5 sites) to get
-      tooltip config. It has `app` in scope; use it. `profileManager` was kept
-      public on the settings classes only so this didn't break.
+- [x] **`socketConnTimeoutMs` was a dead setting.** (done 2026-09-07) It had a
+      UI field, validation and persistence, and nothing read it; `socket:connect`
+      now takes `connTimeoutMs` and the main process uses it instead of a fixed
+      2 s.
+- [x] **`RxSettingsView` reached `displaySettings` via
+      `rxSettings.profileManager.app.settings.displaySettings`** (done 2026-09-07)
+      — it and `TxSettingsView` now take `displaySettings` as a prop, and the
+      `profileManager` getters that existed only for this are gone from the
+      settings classes.
 - [x] Seven direct writes to `rxSettings.ansiEscapeCodeParsingEnabled` in
       `FakePortsController` bypassed the setter and never persisted. Caught by
       the getter-based façade at compile time; fixed.
@@ -204,7 +205,7 @@ Found on the way:
       equivalent is the natural follow-up.
 
 <details>
-<summary>Original analysis (kept for context)</summary>
+<summary>Original analysis (kept for context; its checkboxes are historical, see the status above)</summary>
 
 ## 3. Six settings classes hand-rolling identical load/save plumbing  [arch]
 

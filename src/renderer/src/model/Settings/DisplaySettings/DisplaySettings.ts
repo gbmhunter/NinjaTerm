@@ -1,7 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import type { Session } from 'src/model/Session/Session';
 import type { DisplaySettingsData } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
 import { SettingsBranch } from '../SettingsBranch';
@@ -75,11 +74,6 @@ export const TERMINAL_FONT_FALLBACK_STACK = `${NINJATERM_FONT_FAMILY}, ${SYSTEM_
 
 export default class DisplaySettings {
   session: Session;
-
-  /** App-wide data (presets, MCP flags). Reached through the session. */
-  get profileManager(): AppDataManager {
-    return this.session.app.profileManager;
-  }
 
   /** See `SettingsBranch` for how this class relates to `DisplaySettingsData`. */
   private readonly branch = new SettingsBranch<DisplaySettingsData>(
