@@ -1,5 +1,4 @@
 import { makeAutoObservable } from 'mobx';
-import type { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import type { Session } from 'src/model/Session/Session';
 import type { TxSettingsData } from 'src/model/AppDataManager/DataClasses/TxSettingsData';
 import { SettingsBranch } from '../SettingsBranch';
@@ -56,11 +55,6 @@ export enum DeleteKeyPressBehavior {
 export default class TxSettings {
 
   session: Session;
-
-  /** App-wide data (presets, MCP flags). Reached through the session. */
-  get profileManager(): AppDataManager {
-    return this.session.app.profileManager;
-  }
 
   /** See `SettingsBranch` for how this class relates to `TxSettingsData`. */
   private readonly branch = new SettingsBranch<TxSettingsData>(

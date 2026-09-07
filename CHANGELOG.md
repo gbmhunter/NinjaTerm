@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **The socket "Connection timeout" setting is now used.** It had a field, validation and persistence, but the main process always waited a fixed 2 s; `socket:connect` now carries the configured value.
+
 ## [5.19.0] - 2026-09-06
 
 ### Added

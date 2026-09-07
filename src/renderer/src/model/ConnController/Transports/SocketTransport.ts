@@ -51,6 +51,7 @@ export class SocketTransport implements Transport {
     const target = this.connectedTo ?? {
       host: this.session.settings.portConfiguration.socketHost,
       port: this.session.settings.portConfiguration.socketPort,
+      connTimeoutMs: this.session.settings.portConfiguration.socketConnTimeoutMs.appliedValue,
     };
 
     try {

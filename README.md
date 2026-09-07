@@ -32,7 +32,7 @@ ninjaterm/
 ├── firmware-test-apps/ # Contains firmware test applications (Arduino sketches and a Zephyr RTT test app) used for exercising NinjaTerm against real hardware.
 ├── docs/ # Contains Docusaurus website which contains the homepage, installation guide and manual. Self-contained node project.
 ├── src/ # Contains the Electron application code.
-├── tests/ # Contains the end-to-end tests using Playwright.
+├── e2e-tests/ # Contains the end-to-end tests using Playwright.
 ├── web/ # Contains the web-based version of NinjaTerm. Self-contained node project.
 ```
 
@@ -91,7 +91,7 @@ npx vitest run
 
 ### E2E Tests
 
-End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](https://playwright.dev/). The Playwright tests are located in the `tests/` directory, and the Playwright config is at `playwright.config.ts`.
+End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](https://playwright.dev/). The Playwright tests are located in the `e2e-tests/` directory, and the Playwright config is at `playwright.config.ts`.
 
 To run just the E2E tests from command line:
 

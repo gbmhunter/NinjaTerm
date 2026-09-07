@@ -147,7 +147,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Socket operations
   socket: {
-    connect: (options: { host: string; port: number }) => ipcRenderer.invoke('socket:connect', options),
+    connect: (options: { host: string; port: number; connTimeoutMs?: number }) => ipcRenderer.invoke('socket:connect', options),
     disconnect: (connectionId: string) => ipcRenderer.invoke('socket:disconnect', connectionId),
     writeData: (connectionId: string, data: Uint8Array) => ipcRenderer.invoke('socket:write-data', connectionId, data),
 
@@ -278,7 +278,7 @@ export interface ElectronAPI {
     isOpen(): Promise<{ success: boolean; isOpen?: boolean; error?: string }>;
   };
   socket: {
-    connect(options: { host: string; port: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
+    connect(options: { host: string; port: number; connTimeoutMs?: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
     disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
     writeData(connectionId: string, data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (connectionId: string, data: Buffer) => void): Disposer;

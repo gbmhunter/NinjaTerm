@@ -222,6 +222,7 @@ describe('ConnController connection lifecycle', () => {
       expect(window.electronAPI.socket.connect).toHaveBeenCalledWith({
         host: '192.168.1.5',
         port: 1234,
+        connTimeoutMs: 2000,
       });
       expect(conn.connState).toBe(ConnState.OPENED);
     });
